@@ -1,122 +1,177 @@
-# -*- coding: utf-8 -*-
 """
-Compute mortage related stuff
+Collection of functions deal with mortgage calculations
+Based heavily on http://pbpython.com/amortization-model-revised.html
+ToDo:
+DataFrame should automatically condense bi-weekly payments to monthly
+More tests
+More docstrings
 """
-import math
+from collections import OrderedDict
+from datetime import date
+from dateutil.relativedelta import relativedelta
+import pandas as pd
+import numpy as np
 
-
-def calc_annual_rate(posted_rate):
-    """Account for semi annual compounding"""
-    annual_rate = (1 + posted_rate/2)**2 -1
-    return annual_rate
-
-def find_mortgage_payment(loan, years, rate, payments_per_year=12):
+def monthly_payment(principal, years, rate):
     """
-    Determine monthly payments required to amortize a loan given
-    the size of the loan, the number of years, and the interest rate
-
-    Keyword arguments:
-    loan: the size of the loan
-    years: number of years of the loan
-    rate: the annual interest rate (in decimal format)
-
-    Returns: the monthly payment amount
+    Return the monthly payment based on amount, amortization period, and rate
+    Takes APR as an input and compounds semi annually for AER. Canadian
+    mortgages are dumb like that.
+    
+    Arguments:
+        principal {int or float} -- The amount of the mortgage
+        years {int} -- Total amortization period (not the term of the mortgage)
+        rate {float} -- APR in decimal form, i.e. 6% is input as 0.06
+    
+    Returns:
+        [float] -- The amount of the monthly payment
     """
-    periods = years * payments_per_year
-    rate = calc_annual_rate(rate)
-    periodic_interest_rate = (1 + rate)**(1/payments_per_year) -1
-    payment = loan * periodic_interest_rate / (1-(1+periodic_interest_rate)**(-periods))
-    return payment
+    rate = (1 + (rate /2))**2 -1
+    periodic_interest_rate = (1 + rate)**(1/12) -1
+    periods = years * 12
+    np_pay = -round(np.pmt(periodic_interest_rate, periods, principal), 2)
+    return np_pay
 
-def find_cmhc_premium(purchase_price, down_payment):
+def bi_weekly_payment(principal, years, rate):
     """
-    Determine the amount of the CMHC premium added onto a mortgage
-    Can only be applied to 25 year and under amortization periods
-    I'm not checking for that right now, maybe update later
-
-    Keyword arguments:
-    purchase_price: price of the house
-    down_payment: amount paid down
-
-    Returns: Amount of CMHC insurance, to be added to mortgage
+    Return the bi-weekly payment based on amount, amortization period, and rate
+    Takes APR as an input and compounds semi annually for AER. Canadian
+    mortgages are dumb like that.
+    
+    Arguments:
+    principal {int or float} -- The amount of the mortgage
+    years {int} -- Total amortization period (not the term of the mortgage)
+    rate {float} -- APR in decimal form, i.e. 6% is input as 0.06
+    
+    Returns:
+        [float] -- The amount of the monthly payment
     """
-    loan_ratio = down_payment / purchase_price
-    loan_amount = purchase_price - down_payment
-    if loan_ratio >= 0.2:
-        print("Down payment 20% or greater, no premium")
-        premium = 0
-    elif loan_ratio >= .15:
-        premium = loan_amount * 0.028
-    elif loan_ratio >= .1:
-        premium = loan_amount * 0.031
-    elif loan_ratio >= .05:
-        premium = loan_amount * 0.04
+
+    rate = (1 + (rate /2))**2 -1
+    periodic_interest_rate = (1 + rate)**(1/26) -1
+    periods = years * 26
+    np_pay = -round(np.pmt(periodic_interest_rate, periods, principal), 2)
+    return np_pay
+
+def acc_bi_weekly_payment(principal, years, rate):
+    """
+    Return the accelerated bi-weekly payment based on amount, amortization 
+    period, and rate Takes APR as an input and compounds semi annually for AER.
+    Canadian mortgages are dumb like that. For accelerated bi-weekly the
+    formula is just your monthly payment divided by two so this function
+    depends on the monthly payment above.
+    
+    Arguments:
+    principal {int or float} -- The amount of the mortgage
+    years {int} -- Total amortization period (not the term of the mortgage)
+    rate {float} -- APR in decimal form, i.e. 6% is input as 0.06
+    
+    Returns:
+    [float] -- The amount of the monthly payment
+    """
+    pmt = round(monthly_payment(principal, years, rate) / 2, 2)
+    return pmt
+
+def amortize(
+    principal,
+    years,
+    rate,
+    addl_principal=0,
+    start_date=date.today().replace(day=1) + relativedelta(months=1),
+    payment_type='monthly'
+):
+    """
+    Creates a mortgage payment table with interest payments, outstanding
+    balance for the entire amortization period.
+    
+    Arguments:
+        principal {int or float} -- The amount of the mortgage
+        years {int} -- Total amortization period (not the term of the mortgage)
+        rate {float} -- APR in decimal form, i.e. 6% is input as 0.06
+    
+    Keyword Arguments:
+        addl_principal {int} -- [additional regular payments] (default: {0})
+        start_date {[type]} -- [when the mortgage starts] (default: today)
+        payment_type {str} -- monthly, bi_weekly or acc_bi_weekly
+         (default: {'monthly'})
+    """
+
+    periods_dict = {
+        'monthly': monthly_payment,
+        'bi_weekly': bi_weekly_payment,
+        'acc_bi_weekly': acc_bi_weekly_payment
+        }
+    
+    pmt = periods_dict[payment_type](principal, years, rate)
+    rate = (1 + (rate /2))**2 -1
+    if payment_type == 'monthly':
+        periodic_interest_rate = (1 + rate)**(1/12) -1
+        date_increment = relativedelta(months=1)
     else:
-        print("Down payment less than 5%, invalid, returning 10% premium")
-        premium = loan_amount * 0.1
-    return premium
-
-
-def find_title_fees(purchase_price, mortgage_amount):
-    """
-    Calculates title fees for Alberta
-
-    Keyword arguments:
-    purchase_price: price of the house
-    mortgage_amount: amount of the mortgage
-
-    returns:
-    Total cost of fees
-    """
-    def title_calc(amount):
-        """
-        Formula is the same for purchase and mortgage
-        """
-        portions = math.ceil(amount / 5000)
-        fee = 50 + portions
-        return fee
-
-    total_cost = title_calc(purchase_price) + title_calc(mortgage_amount)
-    return total_cost
-
-def find_mortgage_payment_stream(loan, years, rate, payments_per_year=12):
-    """
-    Determine monthly payments required to amortize a loan given
-    the size of the loan, the number of years, and the interest rate
-    calculates the amount going to interest and principal in each payment
-
-    Keyword arguments:
-    loan: the size of the loan
-    years: number of years of the loan
-    rate: the annual interest rate (in decimal format)
-    payments_per_year: payment frequency, eg 52 would be weekly
-
-    Returns: numpy array of interest, principal and total payments
-    """
-
-
-class House:
-    def __init__(self, price, down, amort):
-        """
-        price: list price of the house
-        down: down payment in dollars
-        amort: list of tuples of years and rates (year, rate)
-            e.g [(5, 0.01), (10, 0.02)] is amortized for a total of 15 years
-            at 1% for the first 5 and 2% for the last 10
-        """
-        self.list_price = price
-        self.down_payment = down
-        self.amortize_tuple = amort
-        self.total_amortize = sum(i for i, j in amort)
-
-
-
+        periodic_interest_rate = (1 + rate)**(1/26) -1
+        date_increment = relativedelta(weeks=2)
     
+    # initialize the variables to keep track of the periods and running balance
+    per = 1
+    beg_balance = principal
+    end_balance = principal
     
+    while end_balance > 0:
+        
+        # recalculate interest based on the current balance
+        interest = round(periodic_interest_rate * beg_balance, 2)
+        
+        # Determine payment based on if this will pay off the loan
+        pmt = min(pmt, beg_balance + interest)
+        principal = pmt - interest
+        
+        # Ensure additional payment gets adjusted if the loan is being paid off
+        addl_principal = min(addl_principal, beg_balance - principal)
+        end_balance = beg_balance - (principal + addl_principal)
+        
+        yield OrderedDict([('Date', start_date),
+                           ('Period', per),
+                           ('Begin_balance', beg_balance),
+                           ('Payment', pmt),
+                           ('Principal', principal),
+                           ('Interest', interest),
+                           ('Additional_payment', addl_principal),
+                           ('End_balance', end_balance)
+                           ])
+        # increment the counter, balance and date
+        per += 1
+        start_date += date_increment
+        beg_balance = end_balance
 
-
+def amortize_df(
+    principal,
+    years,
+    rate,
+    addl_principal=0,
+    start_date=date.today().replace(day=1) + relativedelta(months=1),
+    payment_type='monthly'
+):
+    """Wrapper for amortize to return a df"""
+    df = pd.DataFrame(amortize(
+        principal, years, rate, addl_principal, start_date, payment_type
+        ))
+    df['Date'] = pd.to_datetime(df['Date'])
+    df.set_index('Date', inplace=True)
+    df.drop('Period', axis='columns', inplace=True)
+    # Resulting DataFrame should be monthly regardless of payment frequency
+    if payment_type != 'monthly':
+        df_weekly = df.copy()
+        df = df_weekly['Begin_balance'].resample('M').max()
+        df = pd.concat(
+            [df, df_weekly['End_balance'].resample('M').min()], axis=1
+            )
+        for col in ['Payment', 'Principal', 'Interest', 'Additional_payment']:
+            df = pd.concat(
+                [df, df_weekly[col].resample('M').sum()], axis=1
+            )
+        df.index = df.index.map(lambda d: d.replace(day=1))
+    return df 
+        
 
 if __name__ == '__main__':
-    print("All for 100k 25 year 6%")
-    print("monthly:")
-    print(find_mortgage_payment(*[100000, 25, 0.06, 12]))
+    df = amortize_df(100000, 25, 0.06, 0, payment_type="bi_weekly")
