@@ -1,6 +1,8 @@
 """
 Broader calculations around buying a house
 """
+import math
+
 def find_cmhc_premium(purchase_price, down_payment):
     """
     Determine the amount of the CMHC premium added onto a mortgage
@@ -50,3 +52,53 @@ def find_title_fees(purchase_price, mortgage_amount):
 
     total_cost = title_calc(purchase_price) + title_calc(mortgage_amount)
     return total_cost
+
+def other_costs(
+    legal_fees=1000,
+    title_insurance=500,
+    home_inspection=500,
+    home_appraisal=300
+):
+    """
+    Easy placeholder for other cash up front costs.
+    Can be expanded later
+    
+    Keyword Arguments:
+        legal_fees {int} -- legal fees (default: {1000})
+        title_insurance {int} -- title insurance (default: {500})
+        home_inspection {int} -- home inspection (default: {500})
+        home_appraisal {int} -- home appraisal (default: {300})
+    """
+    other_costs = (
+        legal_fees + title_insurance + home_inspection + home_appraisal
+        )
+    return other_costs
+
+def find_mortgage(purchase_price, down_payment):
+    """
+    Compute mortgage based on purchase price and down payment
+    Basically just accounts for CMHC
+    
+    Arguments:
+        purchase_price {int or float} -- cost of the house
+        down_payment {int or float} -- how much down in dollars
+    """
+    mortgage = (
+        purchase_price - down_payment + 
+        find_cmhc_premium(purchase_price, down_payment)
+        )
+    return mortgage
+
+def find_cash_to_buy(purchase_price, down_payment, extras=other_costs()):
+    """
+    How much cash you need up front for a given house and down payment
+    
+    Arguments:
+        purchase_price {int or float} -- cost of the house
+        down_payment {int or float} -- how much down in dollars
+        extras {int or float} -- other expenses
+    """
+    cash = down_payment
+    cash += find_title_fees(purchase_price, mortgage_amount)
+    cash += extras
+    return cash
