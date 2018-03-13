@@ -2,6 +2,11 @@
 Broader calculations around buying a house
 """
 import math
+from datetime import date
+from dateutil.relativedelta import relativedelta
+import numpy as np
+import mortgage
+from investment import invest
 
 def find_cmhc_premium(purchase_price, down_payment):
     """
@@ -99,6 +104,71 @@ def find_cash_to_buy(purchase_price, down_payment, extras=other_costs()):
         extras {int or float} -- other expenses
     """
     cash = down_payment
+    mortgage_amount = find_mortgage(purchase_price, down_payment)
     cash += find_title_fees(purchase_price, mortgage_amount)
     cash += extras
     return cash
+
+def find_monthly_property_tax(house_value, rate=0.0085):
+    """taken from city of edmonton tax calculator
+    
+    Arguments:
+        house_value {numeric} -- assessed value of the house
+    
+    Keyword Arguments:
+        rate {float} -- annual tax rate (default: {0.0085})
+    """
+    return house_value * rate / 12
+
+# Need to rethink this design
+class House:
+    def __init__(
+        self,
+        purchase_price,
+        down_payment,
+        years,
+        rate,
+        addl_principal=0,
+        start_date=date.today().replace(day=1) + relativedelta(months=1), 
+        payment_type='monthly'
+    ):
+        self.purchase_price = purchase_price
+        self.down_payment = down_payment
+        self.mortgage_amount = find_mortgage(purchase_price, down_payment)
+        self.cash_to_buy = find_cash_to_buy(purchase_price, down_payment)
+        self.df = mortgage.amortize_df(
+            self.mortgage_amount,
+            years,
+            rate,
+            addl_principal,
+            start_date,
+            payment_type
+            )
+        self.df['House Value'] = self.purchase_price
+        self.df['Ownership_costs'] = self.df['Payment']
+    
+    def calc_equity(self):
+        self.df['Equity'] = self.df['House Value'] - self.df['End_balance']
+    
+    def calc_value(self, rate):
+        rate = (1 + rate)**(1/12) -1
+        self.df['House Value'] = np.fv(
+            rate,
+            np.arange(len(self.df)),
+            0,
+            -self.purchase_price
+            )
+        self.calc_equity()
+    
+    def calc_other_expense(
+        self,
+        tax_rt=0.0085,
+        maint_rt=0.0125,
+        prop_insur=.0019,
+        other_costs=200
+    ):
+        combined_rate = (tax_rt + maint_rt + prop_insur) / 12
+        self.df['Ownership_costs'] = (
+            self.df['House Value'] * combined_rate + other_costs
+            )
+        self.df['Ownership_costs'] += self.df['Payment']
