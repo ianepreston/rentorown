@@ -160,6 +160,22 @@ class House:
             )
         self.calc_equity()
     
+    def calc_rent(self, rent, inflation):
+        self.df['Years_out'] = self.df.index.year - self.df.index.year.min()
+        start_month = self.df.index.month[0]
+        mask = np.logical_and(
+            self.df.index.month < start_month,
+            self.df['Years_out'] > 0
+            )
+        self.df.loc[mask, 'Years_out'] -= 1
+        self.df['Rent'] = (1 + inflation) ** self.df['Years_out'] * rent
+        self.df.drop(columns=['Years_out'], inplace=True)
+
+    def calc_net_cash(self):
+        self.df['Net Cash'] = self.df['Ownership_costs'] - self.df['Rent']
+        self.df['Net Cash'].iloc[0] += self.cash_to_buy
+    
+    
     def calc_other_expense(
         self,
         tax_rt=0.0085,
@@ -172,3 +188,18 @@ class House:
             self.df['House Value'] * combined_rate + other_costs
             )
         self.df['Ownership_costs'] += self.df['Payment']
+    
+    def calc_investment_equity(self, rate):
+        rate = (1 + rate)**(1/12) -1
+        equity = [self.df['Net Cash'][0]]
+        for i in range(1, len(self.df)):
+            new_eq = (equity[i -1] + self.df['Net Cash'][i]) * (1 + rate)
+            equity.append(new_eq)
+            self.df['Investment Equity'] = equity
+ 
+if __name__ == '__main__':
+    test = House(600000, 120000, 25, .035)
+    test.calc_value(.03)
+    test.calc_other_expense()
+    test.calc_rent(2800, .02)
+    test.calc_net_cash()
