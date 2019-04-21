@@ -112,3 +112,4 @@ data/*i
 *.xls
 *.ods
 *.csv
+.~lock*
