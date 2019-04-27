@@ -105,4 +105,69 @@ class House():
         return total_cost
         
 
+class Mortgage():
+    """Base mortgage class"""
+    def __init__(self, principal, years, rate):
+        self.principal = principal
+        self.years = years
+        self.rate = rate
+    
+    def monthly_payment(self):
+        """return the monthly payment
 
+        Takes APR as an input and compounds semi annually for AER. Canadian
+        mortgages are dumb like that.
+        
+        Arguments:
+            principal {int or float} -- The amount of the mortgage
+            years {int} -- Total amortization period (not the term of the mortgage)
+            rate {float} -- APR in decimal form, i.e. 6% is input as 0.06
+        
+        Returns:
+            [float] -- The amount of the monthly payment
+        """
+        rate = (1 + (self.rate /2))**2 -1
+        periodic_interest_rate = (1 + rate)**(1/12) -1
+        periods = self.years * 12
+        np_pay = -round(np.pmt(periodic_interest_rate, periods, self.principal), 2)
+        return np_pay
+    
+    def bi_weekly_payment(self):
+        """
+        Return the bi-weekly payment based on amount, amortization period, and rate
+        Takes APR as an input and compounds semi annually for AER. Canadian
+        mortgages are dumb like that.
+        
+        Arguments:
+        principal {int or float} -- The amount of the mortgage
+        years {int} -- Total amortization period (not the term of the mortgage)
+        rate {float} -- APR in decimal form, i.e. 6% is input as 0.06
+        
+        Returns:
+            [float] -- The amount of the monthly payment
+        """
+
+        rate = (1 + (self.rate /2))**2 -1
+        periodic_interest_rate = (1 + rate)**(1/26) -1
+        periods = self.years * 26
+        np_pay = -round(np.pmt(periodic_interest_rate, periods, self.principal), 2)
+        return np_pay
+
+    def acc_bi_weekly_payment(self):
+        """
+        Return the accelerated bi-weekly payment based on amount, amortization 
+        period, and rate Takes APR as an input and compounds semi annually for AER.
+        Canadian mortgages are dumb like that. For accelerated bi-weekly the
+        formula is just your monthly payment divided by two so this function
+        depends on the monthly payment above.
+        
+        Arguments:
+        principal {int or float} -- The amount of the mortgage
+        years {int} -- Total amortization period (not the term of the mortgage)
+        rate {float} -- APR in decimal form, i.e. 6% is input as 0.06
+        
+        Returns:
+        [float] -- The amount of the monthly payment
+        """
+        pmt = round(self.monthly_payment() / 2, 2)
+        return pmt
