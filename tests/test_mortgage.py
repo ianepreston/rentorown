@@ -2,14 +2,16 @@
 import pytest
 from mortgage import rebuild
 
-@pytest.fixture(scope='module')
+
+@pytest.fixture(scope="module")
 def mortgage100k():
-    test_mortgage = rebuild.Mortgage(100000, 25, .06)
+    test_mortgage = rebuild.Mortgage(100000, 25, 0.06)
     return test_mortgage
 
-@pytest.fixture(scope='module')
+
+@pytest.fixture(scope="module")
 def mortgage250k():
-    test_mortgage = rebuild.Mortgage(250000, 25, .03)
+    test_mortgage = rebuild.Mortgage(250000, 25, 0.03)
     return test_mortgage
 
 

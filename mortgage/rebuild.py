@@ -9,12 +9,14 @@ import altair as alt
 # Have to have a start point for math, next month seems as good as anything
 START_DATE = date.today().replace(day=1) + relativedelta(months=1)
 
-class House():
-    """House object, you buy one of these"""    
+
+class House:
+    """House object, you buy one of these"""
+
     def __init__(self, value):
         """Right now the only thing it starts with is a value/price"""
         self.value = value
-    
+
     def buy(self, down_payment, additional_costs=2300):
         """Buy the house
         
@@ -34,15 +36,11 @@ class House():
             dictionary returning numeric values for amount
             to be mortgaged and cash up front required for purchase
         """
-        mortgage_amt = (
-            self.value -
-            down_payment +
-            self._find_cmhc_premium(down_payment)
-        )
+        mortgage_amt = self.value - down_payment + self._find_cmhc_premium(down_payment)
         title_fees = self._find_title_fees(mortgage_amt)
         cash = down_payment + title_fees + additional_costs
-        return {'mortgage': mortgage_amt, 'cash': cash}
-    
+        return {"mortgage": mortgage_amt, "cash": cash}
+
     def sell(self):
         """Sell the house
         
@@ -50,7 +48,7 @@ class House():
         things in here, but for now this just returns the value
         """
         return self.value
-    
+
     def _find_cmhc_premium(self, down_payment):
         """ Helper function for buy()
         Determine the amount of the CMHC premium added onto a mortgage
@@ -71,14 +69,14 @@ class House():
         loan_amount = self.value - down_payment
         if loan_ratio >= 0.2:
             premium = 0
-        elif loan_ratio >= .15:
+        elif loan_ratio >= 0.15:
             premium = loan_amount * 0.028
-        elif loan_ratio >= .1:
+        elif loan_ratio >= 0.1:
             premium = loan_amount * 0.031
-        elif loan_ratio >= .05:
+        elif loan_ratio >= 0.05:
             premium = loan_amount * 0.04
         else:
-            raise ValueError('Down must be at least 5%')
+            raise ValueError("Down must be at least 5%")
         return premium
 
     def _find_title_fees(self, mortgage_amount):
@@ -95,6 +93,7 @@ class House():
         total_cost: float
             all title fees
         """
+
         def title_calc(amount):
             """Formula is the same for purchase and mortgage"""
             portions = math.ceil(amount / 5000)
@@ -103,15 +102,16 @@ class House():
 
         total_cost = title_calc(self.value) + title_calc(mortgage_amount)
         return total_cost
-        
 
-class Mortgage():
+
+class Mortgage:
     """Base mortgage class"""
+
     def __init__(self, principal, years, rate):
         self.principal = principal
         self.years = years
         self.rate = rate
-    
+
     def monthly_payment(self):
         """return the monthly payment
 
@@ -126,12 +126,12 @@ class Mortgage():
         Returns:
             [float] -- The amount of the monthly payment
         """
-        rate = (1 + (self.rate /2))**2 -1
-        periodic_interest_rate = (1 + rate)**(1/12) -1
+        rate = (1 + (self.rate / 2)) ** 2 - 1
+        periodic_interest_rate = (1 + rate) ** (1 / 12) - 1
         periods = self.years * 12
         np_pay = -round(np.pmt(periodic_interest_rate, periods, self.principal), 2)
         return np_pay
-    
+
     def bi_weekly_payment(self):
         """
         Return the bi-weekly payment based on amount, amortization period, and rate
@@ -147,8 +147,8 @@ class Mortgage():
             [float] -- The amount of the monthly payment
         """
 
-        rate = (1 + (self.rate /2))**2 -1
-        periodic_interest_rate = (1 + rate)**(1/26) -1
+        rate = (1 + (self.rate / 2)) ** 2 - 1
+        periodic_interest_rate = (1 + rate) ** (1 / 26) - 1
         periods = self.years * 26
         np_pay = -round(np.pmt(periodic_interest_rate, periods, self.principal), 2)
         return np_pay
