@@ -19,4 +19,19 @@ def test_cmhc_over_15(demo_house):
 
 def test_title_fees(demo_house):
     """title fee calc for Alberta"""
-    assert demo_house._find_title_fees(20000) == 124
+    assert demo_house._find_title_fees(80000) == 136
+
+
+def test_sell(demo_house):
+    """right now sell should just return value"""
+    assert demo_house.sell() == 100000
+
+
+def test_buy(demo_house):
+    """test buying with defaults
+    Shouldn't have CMHC, title fees match above test
+    Will need to add more complicated houses to test edge cases later
+    """
+    buy_dict = demo_house.buy(20000)
+    assert buy_dict['mortgage'] == 80000
+    assert buy_dict['cash'] == 22436
