@@ -22,4 +22,4 @@ script:
     - pytest --cov=./mortgage
 
 after_success:
-    - codecov -t $CODECOV_TOKEN
+    - codecov
