@@ -1,5 +1,6 @@
 """Messing around with refactoring the old code before I commit to a rebuild"""
 import math
+from collections import OrderedDict
 from datetime import date
 from dateutil.relativedelta import relativedelta
 import pandas as pd
@@ -16,6 +17,16 @@ class House:
     def __init__(self, value):
         """Right now the only thing it starts with is a value/price"""
         self.value = value
+
+    def monthly_property_tax(self, rate=0.0085):
+        """taken from city of edmonton tax calculator
+        
+        Parameters
+        ----------
+        rate: float, default 0.0085
+            annual tax rate 
+        """
+        return self.value * rate / 12
 
     def buy(self, down_payment, additional_costs=2300):
         """Buy the house
@@ -171,3 +182,68 @@ class Mortgage:
         """
         pmt = round(self.monthly_payment() / 2, 2)
         return pmt
+
+    def amortize(self, addl_pmt=0, payment_type="monthly"):
+        """Show payments on the mortgage
+
+        Parameters
+        ----------
+        addl_pmnt: numeric, default 0
+            additional regular contributions
+        payment_type: ["monthly", "bi_weekly", "acc_bi_weekly"], default monthly
+            type of payment plan
+        """
+
+        def amortizdict():
+            """Yield a dictionary to convert to dataframe"""
+            periods_dict = {
+                "monthly": self.monthly_payment,
+                "bi_weekly": self.bi_weekly_payment,
+                "acc_bi_weekly": self.acc_bi_weekly_payment,
+            }
+            pmt = periods_dict[payment_type]()
+            rate = (1 + (self.rate / 2)) ** 2 - 1
+            if payment_type == "monthly":
+                periodic_interest_rate = (1 + rate) ** (1 / 12) - 1
+                date_increment = relativedelta(months=1)
+            else:
+                periodic_interest_rate = (1 + rate) ** (1 / 26) - 1
+                date_increment = relativedelta(weeks=2)
+
+            # initialize the variables to keep track of the periods and running balance
+            per = 1
+            beg_balance = self.principal
+            end_balance = self.principal
+            start_date = START_DATE
+
+            while end_balance > 0:
+                # recalculate interest based on the current balance
+                interest = round(periodic_interest_rate * beg_balance, 2)
+
+                # Determine payment based on if this will pay off the loan
+                pmt = min(pmt, beg_balance + interest)
+                principal = pmt - interest
+
+                # Ensure additional payment gets adjusted if the loan is being paid off
+                addl_pmt = min(addl_pmt, beg_balance - principal)
+                end_balance = beg_balance - (principal + addl_pmt)
+
+                yield OrderedDict(
+                    [
+                        ("Date", start_date),
+                        ("Period", per),
+                        ("Begin_balance", beg_balance),
+                        ("Payment", pmt),
+                        ("Principal", principal),
+                        ("Interest", interest),
+                        ("Additional_payment", addl_pmt),
+                        ("End_balance", end_balance),
+                    ]
+                )
+                # increment the counter, balance and date
+                per += 1
+                start_date += date_increment
+                beg_balance = end_balance
+
+        df = pd.DataFrame(amortizdict())
+        return df
