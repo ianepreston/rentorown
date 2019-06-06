@@ -246,4 +246,11 @@ class Mortgage:
                 beg_balance = end_balance
 
         df = pd.DataFrame(amortizdict())
+        if payment_type != "monthly":
+            df_weekly = df.copy()
+            df = df_weekly["Begin_balance"].resample("M").max()
+            df = pd.concat([df, df_weekly["End_balance"].resample("M").min()], axis=1)
+            for col in ["Payment", "Principal", "Interest", "Additional_payment"]:
+                df = pd.concat([df, df_weekly[col].resample("M").sum()], axis=1)
+            df.index = df.index.map(lambda d: d.replace(day=1))
         return df
