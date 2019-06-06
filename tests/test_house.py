@@ -1,9 +1,10 @@
 import pytest
-from mortgage import rebuild
+from mortgage import house
 
-@pytest.fixture(scope='module')
+
+@pytest.fixture(scope="module")
 def demo_house():
-    test_house = rebuild.House(100000)
+    test_house = house.House(100000)
     return test_house
 
 
@@ -33,5 +34,5 @@ def test_buy(demo_house):
     Will need to add more complicated houses to test edge cases later
     """
     buy_dict = demo_house.buy(20000)
-    assert buy_dict['mortgage'] == 80000
-    assert buy_dict['cash'] == 22436
+    assert buy_dict["mortgage"] == 80000
+    assert buy_dict["cash"] == 22436

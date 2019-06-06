@@ -1,205 +1,173 @@
-"""
-Broader calculations around buying a house
-"""
+"""Messing around with refactoring the old code before I commit to a rebuild"""
 import math
 from datetime import date
 from dateutil.relativedelta import relativedelta
+import pandas as pd
 import numpy as np
-import mortgage
-from investment import invest
+import altair as alt
 
-def find_cmhc_premium(purchase_price, down_payment):
-    """
-    Determine the amount of the CMHC premium added onto a mortgage
-    Can only be applied to 25 year and under amortization periods
-    I'm not checking for that right now, maybe update later
+# Have to have a start point for math, next month seems as good as anything
+START_DATE = date.today().replace(day=1) + relativedelta(months=1)
 
-    Keyword arguments:
-    purchase_price: price of the house
-    down_payment: amount paid down
 
-    Returns: Amount of CMHC insurance, to be added to mortgage
-    """
-    loan_ratio = down_payment / purchase_price
-    loan_amount = purchase_price - down_payment
-    if loan_ratio >= 0.2:
-        print("Down payment 20% or greater, no premium")
-        premium = 0
-    elif loan_ratio >= .15:
-        premium = loan_amount * 0.028
-    elif loan_ratio >= .1:
-        premium = loan_amount * 0.031
-    elif loan_ratio >= .05:
-        premium = loan_amount * 0.04
-    else:
-        print("Down payment less than 5%, invalid, returning 10% premium")
-        premium = loan_amount * 0.1
-    return premium
-
-def find_title_fees(purchase_price, mortgage_amount):
-    """
-    Calculates title fees for Alberta
-
-    Keyword arguments:
-    purchase_price: price of the house
-    mortgage_amount: amount of the mortgage
-
-    returns:
-    Total cost of fees
-    """
-    def title_calc(amount):
-        """
-        Formula is the same for purchase and mortgage
-        """
-        portions = math.ceil(amount / 5000)
-        fee = 50 + portions
-        return fee
-
-    total_cost = title_calc(purchase_price) + title_calc(mortgage_amount)
-    return total_cost
-
-def other_costs(
-    legal_fees=1000,
-    title_insurance=500,
-    home_inspection=500,
-    home_appraisal=300
-):
-    """
-    Easy placeholder for other cash up front costs.
-    Can be expanded later
-    
-    Keyword Arguments:
-        legal_fees {int} -- legal fees (default: {1000})
-        title_insurance {int} -- title insurance (default: {500})
-        home_inspection {int} -- home inspection (default: {500})
-        home_appraisal {int} -- home appraisal (default: {300})
-    """
-    other_costs = (
-        legal_fees + title_insurance + home_inspection + home_appraisal
-        )
-    return other_costs
-
-def find_mortgage(purchase_price, down_payment):
-    """
-    Compute mortgage based on purchase price and down payment
-    Basically just accounts for CMHC
-    
-    Arguments:
-        purchase_price {int or float} -- cost of the house
-        down_payment {int or float} -- how much down in dollars
-    """
-    mortgage = (
-        purchase_price - down_payment + 
-        find_cmhc_premium(purchase_price, down_payment)
-        )
-    return mortgage
-
-def find_cash_to_buy(purchase_price, down_payment, extras=other_costs()):
-    """
-    How much cash you need up front for a given house and down payment
-    
-    Arguments:
-        purchase_price {int or float} -- cost of the house
-        down_payment {int or float} -- how much down in dollars
-        extras {int or float} -- other expenses
-    """
-    cash = down_payment
-    mortgage_amount = find_mortgage(purchase_price, down_payment)
-    cash += find_title_fees(purchase_price, mortgage_amount)
-    cash += extras
-    return cash
-
-def find_monthly_property_tax(house_value, rate=0.0085):
-    """taken from city of edmonton tax calculator
-    
-    Arguments:
-        house_value {numeric} -- assessed value of the house
-    
-    Keyword Arguments:
-        rate {float} -- annual tax rate (default: {0.0085})
-    """
-    return house_value * rate / 12
-
-# Need to rethink this design
 class House:
-    def __init__(
-        self,
-        purchase_price,
-        down_payment,
-        years,
-        rate,
-        addl_principal=0,
-        start_date=date.today().replace(day=1) + relativedelta(months=1), 
-        payment_type='monthly'
-    ):
-        self.purchase_price = purchase_price
-        self.down_payment = down_payment
-        self.mortgage_amount = find_mortgage(purchase_price, down_payment)
-        self.cash_to_buy = find_cash_to_buy(purchase_price, down_payment)
-        self.df = mortgage.amortize_df(
-            self.mortgage_amount,
-            years,
-            rate,
-            addl_principal,
-            start_date,
-            payment_type
-            )
-        self.df['House Value'] = self.purchase_price
-        self.df['Ownership_costs'] = self.df['Payment']
-    
-    def calc_equity(self):
-        self.df['Equity'] = self.df['House Value'] - self.df['End_balance']
-    
-    def calc_value(self, rate):
-        rate = (1 + rate)**(1/12) -1
-        self.df['House Value'] = np.fv(
-            rate,
-            np.arange(len(self.df)),
-            0,
-            -self.purchase_price
-            )
-        self.calc_equity()
-    
-    def calc_rent(self, rent, inflation):
-        self.df['Years_out'] = self.df.index.year - self.df.index.year.min()
-        start_month = self.df.index.month[0]
-        mask = np.logical_and(
-            self.df.index.month < start_month,
-            self.df['Years_out'] > 0
-            )
-        self.df.loc[mask, 'Years_out'] -= 1
-        self.df['Rent'] = (1 + inflation) ** self.df['Years_out'] * rent
-        self.df.drop(columns=['Years_out'], inplace=True)
+    """House object, you buy one of these"""
 
-    def calc_net_cash(self):
-        self.df['Net Cash'] = self.df['Ownership_costs'] - self.df['Rent']
-        self.df['Net Cash'].iloc[0] += self.cash_to_buy
-    
-    
-    def calc_other_expense(
-        self,
-        tax_rt=0.0085,
-        maint_rt=0.0125,
-        prop_insur=.0019,
-        other_costs=200
-    ):
-        combined_rate = (tax_rt + maint_rt + prop_insur) / 12
-        self.df['Ownership_costs'] = (
-            self.df['House Value'] * combined_rate + other_costs
-            )
-        self.df['Ownership_costs'] += self.df['Payment']
-    
-    def calc_investment_equity(self, rate):
-        rate = (1 + rate)**(1/12) -1
-        equity = [self.df['Net Cash'][0]]
-        for i in range(1, len(self.df)):
-            new_eq = (equity[i -1] + self.df['Net Cash'][i]) * (1 + rate)
-            equity.append(new_eq)
-            self.df['Investment Equity'] = equity
- 
-if __name__ == '__main__':
-    test = House(600000, 120000, 25, .035)
-    test.calc_value(.03)
-    test.calc_other_expense()
-    test.calc_rent(2800, .02)
-    test.calc_net_cash()
+    def __init__(self, value):
+        """Right now the only thing it starts with is a value/price"""
+        self.value = value
+
+    def buy(self, down_payment, additional_costs=2300):
+        """Buy the house
+        
+        Parameters
+        ----------
+        down_payment: numeric
+            The dollar amount of the down payment
+        additional_costs: numeric, default 2300
+            legal fees, title insurance, home inspection,
+            home appraisal, etc. default value from
+            Preet Bannerjee's rent or own excel sheet
+            # http://www.preetbanerjee.com/general/is-renting-a-home-always-a-waste-of-money-no/
+        
+        Returns
+        -------
+        {'mortgage': mortgage_amt, 'cash': cash}:
+            dictionary returning numeric values for amount
+            to be mortgaged and cash up front required for purchase
+        """
+        mortgage_amt = self.value - down_payment + self._find_cmhc_premium(down_payment)
+        title_fees = self._find_title_fees(mortgage_amt)
+        cash = down_payment + title_fees + additional_costs
+        return {"mortgage": mortgage_amt, "cash": cash}
+
+    def sell(self):
+        """Sell the house
+        
+        Eventually we'll want to add closing costs and other
+        things in here, but for now this just returns the value
+        """
+        return self.value
+
+    def _find_cmhc_premium(self, down_payment):
+        """ Helper function for buy()
+        Determine the amount of the CMHC premium added onto a mortgage
+        Can only be applied to 25 year and under amortization periods
+        I'm not checking for that right now, maybe update later
+
+        Parameters
+        ----------
+        down_payment: numeric
+            amount paid down
+
+        Returns
+        -------
+        premium: numeric
+            Amount of CMHC insurance, to be added to mortgage
+        """
+        loan_ratio = down_payment / self.value
+        loan_amount = self.value - down_payment
+        if loan_ratio >= 0.2:
+            premium = 0
+        elif loan_ratio >= 0.15:
+            premium = loan_amount * 0.028
+        elif loan_ratio >= 0.1:
+            premium = loan_amount * 0.031
+        elif loan_ratio >= 0.05:
+            premium = loan_amount * 0.04
+        else:
+            raise ValueError("Down must be at least 5%")
+        return premium
+
+    def _find_title_fees(self, mortgage_amount):
+        """Helper function for buy()
+        Calculates title fees for Alberta
+
+        Parameters
+        ----------
+        mortgage_amount: numeric
+            amount of the mortgage
+
+        Returns
+        -------
+        total_cost: float
+            all title fees
+        """
+
+        def title_calc(amount):
+            """Formula is the same for purchase and mortgage"""
+            portions = math.ceil(amount / 5000)
+            fee = 50 + portions
+            return fee
+
+        total_cost = title_calc(self.value) + title_calc(mortgage_amount)
+        return total_cost
+
+
+class Mortgage:
+    """Base mortgage class"""
+
+    def __init__(self, principal, years, rate):
+        self.principal = principal
+        self.years = years
+        self.rate = rate
+
+    def monthly_payment(self):
+        """return the monthly payment
+
+        Takes APR as an input and compounds semi annually for AER. Canadian
+        mortgages are dumb like that.
+        
+        Arguments:
+            principal {int or float} -- The amount of the mortgage
+            years {int} -- Total amortization period (not the term of the mortgage)
+            rate {float} -- APR in decimal form, i.e. 6% is input as 0.06
+        
+        Returns:
+            [float] -- The amount of the monthly payment
+        """
+        rate = (1 + (self.rate / 2)) ** 2 - 1
+        periodic_interest_rate = (1 + rate) ** (1 / 12) - 1
+        periods = self.years * 12
+        np_pay = -round(np.pmt(periodic_interest_rate, periods, self.principal), 2)
+        return np_pay
+
+    def bi_weekly_payment(self):
+        """
+        Return the bi-weekly payment based on amount, amortization period, and rate
+        Takes APR as an input and compounds semi annually for AER. Canadian
+        mortgages are dumb like that.
+        
+        Arguments:
+        principal {int or float} -- The amount of the mortgage
+        years {int} -- Total amortization period (not the term of the mortgage)
+        rate {float} -- APR in decimal form, i.e. 6% is input as 0.06
+        
+        Returns:
+            [float] -- The amount of the monthly payment
+        """
+
+        rate = (1 + (self.rate / 2)) ** 2 - 1
+        periodic_interest_rate = (1 + rate) ** (1 / 26) - 1
+        periods = self.years * 26
+        np_pay = -round(np.pmt(periodic_interest_rate, periods, self.principal), 2)
+        return np_pay
+
+    def acc_bi_weekly_payment(self):
+        """
+        Return the accelerated bi-weekly payment based on amount, amortization 
+        period, and rate Takes APR as an input and compounds semi annually for AER.
+        Canadian mortgages are dumb like that. For accelerated bi-weekly the
+        formula is just your monthly payment divided by two so this function
+        depends on the monthly payment above.
+        
+        Arguments:
+        principal {int or float} -- The amount of the mortgage
+        years {int} -- Total amortization period (not the term of the mortgage)
+        rate {float} -- APR in decimal form, i.e. 6% is input as 0.06
+        
+        Returns:
+        [float] -- The amount of the monthly payment
+        """
+        pmt = round(self.monthly_payment() / 2, 2)
+        return pmt

@@ -1,17 +1,17 @@
 """Tests for the mortgage class"""
 import pytest
-from mortgage import rebuild
+from mortgage import house
 
 
 @pytest.fixture(scope="module")
 def mortgage100k():
-    test_mortgage = rebuild.Mortgage(100000, 25, 0.06)
+    test_mortgage = house.Mortgage(100000, 25, 0.06)
     return test_mortgage
 
 
 @pytest.fixture(scope="module")
 def mortgage250k():
-    test_mortgage = rebuild.Mortgage(250000, 25, 0.03)
+    test_mortgage = house.Mortgage(250000, 25, 0.03)
     return test_mortgage
 
 
