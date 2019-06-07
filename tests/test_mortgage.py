@@ -33,3 +33,10 @@ def test_correct_acc_bi_weekly_payment(mortgage100k, mortgage250k):
 def test_correct_interest(mortgage250k):
     df = mortgage250k.amortize()
     assert df["Interest"].sum().round(2) == 104_934.71
+    assert df["Principal"].sum().round(2) == 250_000.0
+    df = mortgage250k.amortize(payment_type="bi_weekly")
+    assert df["Interest"].sum().round(2) == 104_696.21
+    assert df["Principal"].sum().round(2) == 250_000.0
+    df = mortgage250k.amortize(payment_type="acc_bi_weekly")
+    assert df["Interest"].sum().round(2) == 92_042.94
+    assert df["Principal"].sum().round(2) == 250_000

@@ -245,12 +245,21 @@ class Mortgage:
                 start_date += date_increment
                 beg_balance = end_balance
 
-        df = pd.DataFrame(amortizdict())
-        if payment_type != "monthly":
-            df_weekly = df.copy()
-            df = df_weekly["Begin_balance"].resample("M").max()
-            df = pd.concat([df, df_weekly["End_balance"].resample("M").min()], axis=1)
-            for col in ["Payment", "Principal", "Interest", "Additional_payment"]:
-                df = pd.concat([df, df_weekly[col].resample("M").sum()], axis=1)
-            df.index = df.index.map(lambda d: d.replace(day=1))
+        df = (
+            pd.DataFrame(amortizdict())
+            .assign(Date=lambda df: pd.to_datetime(df["Date"]))
+            .set_index("Date")
+            .drop(columns=["Period"])
+            .resample("MS")
+            .agg(
+                {
+                    "Begin_balance": "max",
+                    "Payment": "sum",
+                    "Principal": "sum",
+                    "Interest": "sum",
+                    "Additional_payment": "sum",
+                    "End_balance": "min",
+                }
+            )
+        )
         return df
