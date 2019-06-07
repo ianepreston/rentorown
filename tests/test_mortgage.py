@@ -28,3 +28,8 @@ def test_correct_bi_weekly_payment(mortgage100k, mortgage250k):
 def test_correct_acc_bi_weekly_payment(mortgage100k, mortgage250k):
     assert mortgage100k.acc_bi_weekly_payment() == 319.90
     assert mortgage250k.acc_bi_weekly_payment() == 591.55
+
+
+def test_correct_interest(mortgage250k):
+    df = mortgage250k.amortize()
+    assert df["Interest"].sum().round(2) == 104_934.71

@@ -194,7 +194,7 @@ class Mortgage:
             type of payment plan
         """
 
-        def amortizdict():
+        def amortizdict(adp=addl_pmt):
             """Yield a dictionary to convert to dataframe"""
             periods_dict = {
                 "monthly": self.monthly_payment,
@@ -225,8 +225,8 @@ class Mortgage:
                 principal = pmt - interest
 
                 # Ensure additional payment gets adjusted if the loan is being paid off
-                addl_pmt = min(addl_pmt, beg_balance - principal)
-                end_balance = beg_balance - (principal + addl_pmt)
+                adp = min(adp, beg_balance - principal)
+                end_balance = beg_balance - (principal + adp)
 
                 yield OrderedDict(
                     [
@@ -236,7 +236,7 @@ class Mortgage:
                         ("Payment", pmt),
                         ("Principal", principal),
                         ("Interest", interest),
-                        ("Additional_payment", addl_pmt),
+                        ("Additional_payment", adp),
                         ("End_balance", end_balance),
                     ]
                 )
