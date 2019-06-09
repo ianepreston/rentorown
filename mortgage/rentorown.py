@@ -68,8 +68,11 @@ class RentOrOwn:
             periods=self._simulation_periods,
             simulations=number_of_simulations
         ).returns
-        asset_units_purchase = (rent_invest_cash_flow / asset_prices.T).T
-        rent_investment_value = (asset_units_purchase * asset_prices).cumsum(axis=0)
+        self.ap = asset_prices
+        asset_units_purchase = (rent_invest_cash_flow / asset_prices.T).T.cumsum(axis=0)
+        self.aup = asset_units_purchase
+        rent_investment_value = asset_units_purchase * asset_prices
+        self.riv = rent_investment_value
         self.rent_net_worth = (rent_investment_value.T - rent_drawdown_cash_flow).T
 
     def _inflated_series(self, amount):
