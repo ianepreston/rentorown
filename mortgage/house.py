@@ -261,5 +261,6 @@ class Mortgage:
                     "End_balance": "min",
                 }
             )
+            .assign(total_payment=lambda df: df["Payment"] + df["Additional_payment"])
         )
         return df
