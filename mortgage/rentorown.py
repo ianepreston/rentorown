@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.ticker import StrMethodFormatter
 from .asset import BaseAsset, annual_to_monthly_return
 from .house import House, Mortgage
 
@@ -53,7 +55,7 @@ class RentOrOwn:
             BaseAsset(
                 **housing_asset_dict,
                 periods=self._simulation_periods,
-                simulations=number_of_simulations
+                simulations=number_of_simulations,
             ).returns
             * house_price
         )
@@ -66,7 +68,7 @@ class RentOrOwn:
         asset_prices = BaseAsset(
             **investment_asset_dict,
             periods=self._simulation_periods,
-            simulations=number_of_simulations
+            simulations=number_of_simulations,
         ).returns
         self.ap = asset_prices
         asset_units_purchase = (rent_invest_cash_flow / asset_prices.T).T.cumsum(axis=0)
@@ -80,3 +82,29 @@ class RentOrOwn:
         base_inflate = np.full(self._simulation_periods, 1 + self._inflation).cumprod()
         inflated = base_inflate * amount
         return inflated
+
+    def histogram(self, period=None):
+        if period is None:
+            period = -1
+        elif abs(period) > self._simulation_periods - 1:
+            print(
+                f"period {period} out of range {self._simulation_periods}, setting to last period"
+            )
+            period = -1
+        fig, ax = plt.subplots(figsize=(20, 10))
+        plt.hist(
+            (self.own_net_worth[period], self.rent_net_worth[period]),
+            bins=min(100, self.own_net_worth.shape[0]),
+            density=True,
+            histtype="step",
+            label=("Own", "Rent"),
+        )
+        plt.legend()
+        if period < 0:
+            period_label = (self._simulation_periods - period - 1) / 12
+        else:
+            period_label = period / 12
+        plt.title(f"Distribution of results in year {period_label:0.1f}")
+        ax.get_yaxis().set_ticks([])
+        ax.xaxis.set_major_formatter(StrMethodFormatter("${x:0.2e}"))
+        plt.show()
