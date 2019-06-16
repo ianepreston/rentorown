@@ -105,6 +105,69 @@ class RentOrOwn:
         else:
             period_label = period / 12
         plt.title(f"Distribution of results in year {period_label:0.1f}")
+        ax.get_xaxis().set_ticks([])
+        ax.yaxis.set_major_formatter(StrMethodFormatter("${x:0.2e}"))
+        plt.show()
+
+    def median_returns_plot(self):
+        x = np.arange(0, len(self.own_net_worth))
+        rent_med = np.median(self.rent_net_worth, 1)
+        own_med = np.median(self.own_net_worth, 1)
+        fig, ax = plt.subplots(figsize=(20, 10))
+        plt.plot(x, own_med, label="Own")
+        plt.plot(x, rent_med, label="Rent")
+        plt.legend()
+        plt.title("Median returns over the investment horizon")
         ax.get_yaxis().set_ticks([])
         ax.xaxis.set_major_formatter(StrMethodFormatter("${x:0.2e}"))
         plt.show()
+
+
+class ParameterizedRentOrOwn(RentOrOwn):
+    """Rent or own with pre built distributions for housing and assets
+    Housing crudely estimated from MLS HPI: 
+    https://www.crea.ca/housing-market-stats/mls-home-price-index/hpi-tool/
+    Investment returns taken from 80/20 Stocks Bonds expected returns from
+    Canadian Couch Potato
+    https://canadiancouchpotato.com/2016/03/21/what-returns-to-expect-when-youre-expecting/
+    """
+
+    def __init__(
+        self,
+        monthly_rent,
+        house_price,
+        down_payment,
+        mortgage_amortization_years,
+        mortgage_apr,
+        number_of_simulations=10_000,
+        additional_purchase_costs=None,
+        additional_monthly_costs=0,
+        mortgage_payment_schedule="monthly",
+        mortgage_additional_payments=0,
+        annual_inflation=0.02,
+        monthly_property_tax_rate=None,
+        maintenance_cost=0.01,
+    ):
+        super().__init__(
+            monthly_rent=monthly_rent,
+            house_price=house_price,
+            down_payment=down_payment,
+            mortgage_amortization_years=mortgage_amortization_years,
+            mortgage_apr=mortgage_apr,
+            housing_asset_dict={
+                "dist": np.random.normal,
+                "dist_args": {"loc": 0.004, "scale": 0.0136},
+            },
+            investment_asset_dict={
+                "dist": np.random.normal,
+                "dist_args": {"loc": 0.00510, "scale": 0.0266},
+            },
+            number_of_simulations=number_of_simulations,
+            additional_purchase_costs=additional_purchase_costs,
+            additional_monthly_costs=additional_monthly_costs,
+            mortgage_payment_schedule=mortgage_payment_schedule,
+            mortgage_additional_payments=mortgage_additional_payments,
+            annual_inflation=annual_inflation,
+            monthly_property_tax_rate=monthly_property_tax_rate,
+            maintenance_cost=maintenance_cost,
+        )
