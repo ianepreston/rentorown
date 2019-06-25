@@ -1,9 +1,11 @@
-from setuptools import setup
+from setuptools import setup, find_packages
+from version import find_version
 
 setup(
-   name='mortgage',
-   version='0.1',
-   description='rent or own calculations',
-   author='Ian Preston',
-   packages=['mortgage'],  #same as name
+    name="mortgage",
+    author="Ian Preston",
+    version=find_version("mortgage", "__init__.py"),
+    description="rent or own calculations",
+    license="GPL",
+    packages=find_packages(),
 )
