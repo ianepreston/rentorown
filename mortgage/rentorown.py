@@ -6,6 +6,17 @@ from .house import House, Mortgage
 
 
 class RentOrOwn:
+    """Based on a ton of assumptions, are you financially better off rening or owning?
+    
+    Taking two (presumably equivalent) properties, one of which you could rent, and the
+    other that you could purchase, which one will leave you financially better off?
+    Assuming (among other things) that you invest the difference in cash flow and don't
+    just spend it.
+
+    Enter bunch of assumptions about both the rental and owned property, as well as
+    other financial assumptions, and based on them the model will show which is the
+    better financial decision (assuming I built the model correctly).
+    """
     def __init__(
         self,
         monthly_rent,
@@ -24,6 +35,62 @@ class RentOrOwn:
         monthly_property_tax_rate=None,
         maintenance_cost=0.01,
     ):
+        """Setup the model
+
+        Input all the assumptions that will go into the rent or own model
+
+        Parameters
+        ----------
+        monthly_rent: numeric
+            Starting monthly rent of the equivalent rental property
+        house_price: numeric
+            The purchase price of the house
+        down_payment: numeric
+            The down payment on the house purchase
+        mortgage_amortization_years: int
+            How many years the mortgage on the house will be amortized over
+        mortgage_apr: float
+            The posted rate for the mortgage (right now it stays fixed over the whole
+            period. I know that's not realistic, to be updated in a future release maybe
+        housing_asset_dict: dictionary
+            dictionary with keys "dist" and "dist_args" that will be used to parameterize
+            the monthly returns of the housing asset. For example, dist could be
+            np.random.norm and "dist_args" could be {"loc": 0.005, "scale": 0.02}
+            specifying a mean of 0.005 and a standard deviation of 0.02. Note that all
+            returns are monthly
+        investment_asset_dict: dictionary
+            Same as the housing asset dictionary, except this specifies the returns
+            of the investment portfolio that the down payment and any net cash flow
+            between renting and owning will be put into
+        number_of_simulations: int
+            How many times to try this simulation, gets a distribution of outcomes to
+            compare over
+        additional_purchase_costs: numeric, default None
+            Home inspection, title insurance etc. If None, defaults to the default of
+            additional_costs in the House.buy method
+        additional_monthly_costs: numeric, default 0
+            any additional costs of ownership, e.g. condo fees
+        mortgage_payment_schedule: {"monthly", "bi_weekly", "acc_bi_weekly"}
+            payment schedule for the mortgage, default Monthly
+        mortgage_additional_payments: numeric, default 0
+            If you want to make regular additional payments on your mortgage
+        annual_inflation: float, default 0.02
+            rent and non mortgage ownership costs will grow at this rate
+        monthly_property_tax_rate: float, default None
+            percentage of initial home value that will be charged. If default will take
+            the default from the House class. Note that this is escalated by inflation,
+            not against the forecasted value of the home
+        maintenance_cost: float, default 0.01
+            The annual percentage of the starting value of the house that will go to
+            maintenance and upkeep. Note that this is also escalated by inflation
+        
+
+        TODO
+        ----
+        Lot of cleanup, some of the class variables can just be transient, or better
+        named. Could use more inline comments. Might be worth breaking up into more
+        functions. Some of the nested array Transposes could probably be fixed up.
+        """
         house = House(value=house_price)
         if additional_purchase_costs is None:
             buy_dict = house.buy(down_payment=down_payment)
@@ -84,6 +151,13 @@ class RentOrOwn:
         return inflated
 
     def histogram(self, period=None):
+        """Plot a histogram of rent vs own net worths
+        
+        Parameters
+
+        period: int, default None
+            What period to compare net worth in, defaults to end of mortgage amortization
+        """
         if period is None:
             period = -1
         elif abs(period) > self._simulation_periods - 1:
@@ -110,6 +184,7 @@ class RentOrOwn:
         plt.show()
 
     def median_returns_plot(self):
+        """Plot median returns over the whole amortization period"""
         x = np.arange(0, len(self.own_net_worth))
         rent_med = np.median(self.rent_net_worth, 1)
         own_med = np.median(self.own_net_worth, 1)

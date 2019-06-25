@@ -5,10 +5,6 @@ from datetime import date
 from dateutil.relativedelta import relativedelta
 import pandas as pd
 import numpy as np
-import altair as alt
-
-# Have to have a start point for math, next month seems as good as anything
-START_DATE = date.today().replace(day=1) + relativedelta(months=1)
 
 
 class House:
@@ -214,7 +210,7 @@ class Mortgage:
             per = 1
             beg_balance = self.principal
             end_balance = self.principal
-            start_date = START_DATE
+            start_date = date.today().replace(day=1) + relativedelta(months=1)
 
             while end_balance > 0:
                 # recalculate interest based on the current balance

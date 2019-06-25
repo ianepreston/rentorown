@@ -26,6 +26,17 @@ class BaseAsset:
     Lets you parameterize the distribution it's drawn from,
     Specify the number of simulations and periods to simulate for,
     and plot results of the simulations
+
+    I thought this was going to end up a lot more complicated. It could have
+    just been a function.
+
+    TODO
+    ----
+    Right now this does not assume any tax on capital gains on the portfolio. You can
+    hack around that by inputing a tax adjusted expected return. Ideally it would have
+    some way of knowing your current and future TFSA and RRSP contribution room and 
+    applying appropriate taxes on deposits above and beyond that amount, but it doesn't
+    yet.
     """
 
     def __init__(
@@ -40,6 +51,3 @@ class BaseAsset:
         )
         self.returns[0] = 1
 
-
-if __name__ == "__main__":
-    print(annual_to_monthly_return(0.06))
