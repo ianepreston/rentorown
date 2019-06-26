@@ -31,6 +31,12 @@ Key classes and functions documentation
 
 .. autoclass:: mortgage.asset.BaseAsset
 
+.. autoclass:: mortgage.rentorown.RentOrOwn
+    :members:
+
+.. autoclass:: mortgage.rentorown.ParameterizedRentOrOwn
+    :members:
+
 
 
 Indices and tables
