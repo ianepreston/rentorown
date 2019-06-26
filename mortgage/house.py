@@ -8,10 +8,15 @@ import numpy as np
 
 
 class House:
-    """House object, you buy one of these"""
+    """House object, you buy one of these
+    
+    Parameters
+    ----------
+    value: numeric
+        The purchase price of the house
+    """
 
     def __init__(self, value):
-        """Right now the only thing it starts with is a value/price"""
         self.value = value
 
     def monthly_property_tax(self, rate=0.0085):
@@ -39,7 +44,8 @@ class House:
         
         Returns
         -------
-        {'mortgage': mortgage_amt, 'cash': cash}:
+        dict
+            {'mortgage': mortgage_amt, 'cash': cash}:
             dictionary returning numeric values for amount
             to be mortgaged and cash up front required for purchase
         """
@@ -53,6 +59,11 @@ class House:
         
         Eventually we'll want to add closing costs and other
         things in here, but for now this just returns the value
+
+        Returns
+        --------
+        self.value: numeric
+            Just the value of the house
         """
         return self.value
 
@@ -112,7 +123,17 @@ class House:
 
 
 class Mortgage:
-    """Base mortgage class"""
+    """Base mortgage class
+    
+    Parameters
+    -----------
+    principal: numeric
+        Value of the mortgage
+    years: int
+        Amortization period of the mortgage (not term of fixed rate)
+    rate: float
+        APR rate as posted online, will use AER for actual calculations
+    """
 
     def __init__(self, principal, years, rate):
         self.principal = principal
@@ -120,61 +141,77 @@ class Mortgage:
         self.rate = rate
 
     def monthly_payment(self):
-        """return the monthly payment
+        """Payments required for a monthly payment schedule
 
         Takes APR as an input and compounds semi annually for AER. Canadian
         mortgages are dumb like that.
         
-        Arguments:
-            principal {int or float} -- The amount of the mortgage
-            years {int} -- Total amortization period (not the term of the mortgage)
-            rate {float} -- APR in decimal form, i.e. 6% is input as 0.06
+        Parameters
+        -----------
+        principal: numeric
+            The amount of the mortgage
+        years: int
+            Total amortization period (not the term of the mortgage)
+        rate: float
+            APR in decimal form, i.e. 6% is input as 0.06
         
-        Returns:
-            [float] -- The amount of the monthly payment
+        Returns
+        --------
+        pmt: float
+            The amount of the monthly payment
         """
         rate = (1 + (self.rate / 2)) ** 2 - 1
         periodic_interest_rate = (1 + rate) ** (1 / 12) - 1
         periods = self.years * 12
-        np_pay = -round(np.pmt(periodic_interest_rate, periods, self.principal), 2)
-        return np_pay
+        pmt = -round(np.pmt(periodic_interest_rate, periods, self.principal), 2)
+        return pmt
 
     def bi_weekly_payment(self):
-        """
-        Return the bi-weekly payment based on amount, amortization period, and rate
+        """Payments required for a bi-weekly payment schedule
+
         Takes APR as an input and compounds semi annually for AER. Canadian
         mortgages are dumb like that.
         
-        Arguments:
-        principal {int or float} -- The amount of the mortgage
-        years {int} -- Total amortization period (not the term of the mortgage)
-        rate {float} -- APR in decimal form, i.e. 6% is input as 0.06
+        Parameters
+        -----------
+        principal: numeric
+            The amount of the mortgage
+        years: int
+            Total amortization period (not the term of the mortgage)
+        rate: float
+            APR in decimal form, i.e. 6% is input as 0.06
         
-        Returns:
-            [float] -- The amount of the monthly payment
+        Returns
+        --------
+        pmt: float
+            The amount of the monthly payment
         """
 
         rate = (1 + (self.rate / 2)) ** 2 - 1
         periodic_interest_rate = (1 + rate) ** (1 / 26) - 1
         periods = self.years * 26
-        np_pay = -round(np.pmt(periodic_interest_rate, periods, self.principal), 2)
-        return np_pay
+        pmt = -round(np.pmt(periodic_interest_rate, periods, self.principal), 2)
+        return pmt
 
     def acc_bi_weekly_payment(self):
-        """
-        Return the accelerated bi-weekly payment based on amount, amortization 
-        period, and rate Takes APR as an input and compounds semi annually for AER.
-        Canadian mortgages are dumb like that. For accelerated bi-weekly the
-        formula is just your monthly payment divided by two so this function
-        depends on the monthly payment above.
+        """Payments required for an accelerated bi-weekly payment schedule
         
-        Arguments:
-        principal {int or float} -- The amount of the mortgage
-        years {int} -- Total amortization period (not the term of the mortgage)
-        rate {float} -- APR in decimal form, i.e. 6% is input as 0.06
+        Takes APR as an input and compounds semi annually for AER. Canadian
+        mortgages are dumb like that.
         
-        Returns:
-        [float] -- The amount of the monthly payment
+        Parameters
+        -----------
+        principal: numeric
+            The amount of the mortgage
+        years: int
+            Total amortization period (not the term of the mortgage)
+        rate: float
+            APR in decimal form, i.e. 6% is input as 0.06
+        
+        Returns
+        --------
+        pmt: float
+            The amount of the monthly payment
         """
         pmt = round(self.monthly_payment() / 2, 2)
         return pmt
@@ -186,8 +223,14 @@ class Mortgage:
         ----------
         addl_pmnt: numeric, default 0
             additional regular contributions
-        payment_type: ["monthly", "bi_weekly", "acc_bi_weekly"], default monthly
+        payment_type: ["monthly", "bi_weekly", "acc_bi_weekly"], default "monthly"
             type of payment plan
+        
+        Returns
+        -------
+        df: pandas.DataFrame
+            Dataframe of mortgage payments showing principal and interest contributions
+            and amount outstanding
         """
 
         def amortizdict(adp=addl_pmt):
