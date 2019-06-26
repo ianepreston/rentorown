@@ -16,30 +16,8 @@ class RentOrOwn:
     Enter bunch of assumptions about both the rental and owned property, as well as
     other financial assumptions, and based on them the model will show which is the
     better financial decision (assuming I built the model correctly).
-    """
-    def __init__(
-        self,
-        monthly_rent,
-        house_price,
-        down_payment,
-        mortgage_amortization_years,
-        mortgage_apr,
-        housing_asset_dict,
-        investment_asset_dict,
-        number_of_simulations,
-        additional_purchase_costs=None,
-        additional_monthly_costs=0,
-        mortgage_payment_schedule="monthly",
-        mortgage_additional_payments=0,
-        annual_inflation=0.02,
-        monthly_property_tax_rate=None,
-        maintenance_cost=0.01,
-    ):
-        """Setup the model
 
-        Input all the assumptions that will go into the rent or own model
-
-        Parameters
+    Parameters
         ----------
         monthly_rent: numeric
             Starting monthly rent of the equivalent rental property
@@ -87,9 +65,33 @@ class RentOrOwn:
 
         TODO
         ----
-        Lot of cleanup, some of the class variables can just be transient, or better
+        Lot of cleanup on __init__, some of the class variables can just be transient, or better
         named. Could use more inline comments. Might be worth breaking up into more
         functions. Some of the nested array Transposes could probably be fixed up.
+    """
+
+    def __init__(
+        self,
+        monthly_rent,
+        house_price,
+        down_payment,
+        mortgage_amortization_years,
+        mortgage_apr,
+        housing_asset_dict,
+        investment_asset_dict,
+        number_of_simulations,
+        additional_purchase_costs=None,
+        additional_monthly_costs=0,
+        mortgage_payment_schedule="monthly",
+        mortgage_additional_payments=0,
+        annual_inflation=0.02,
+        monthly_property_tax_rate=None,
+        maintenance_cost=0.01,
+    ):
+        """
+        Input all the assumptions that will go into the rent or own model
+
+        
         """
         house = House(value=house_price)
         if additional_purchase_costs is None:
@@ -200,8 +202,10 @@ class RentOrOwn:
 
 class ParameterizedRentOrOwn(RentOrOwn):
     """Rent or own with pre built distributions for housing and assets
+
     Housing crudely estimated from MLS HPI: 
     https://www.crea.ca/housing-market-stats/mls-home-price-index/hpi-tool/
+    
     Investment returns taken from 80/20 Stocks Bonds expected returns from
     Canadian Couch Potato
     https://canadiancouchpotato.com/2016/03/21/what-returns-to-expect-when-youre-expecting/
