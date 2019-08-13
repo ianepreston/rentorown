@@ -1,3 +1,5 @@
+import locale
+locale.setlocale(locale.LC_ALL, '')
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import StrMethodFormatter
@@ -181,8 +183,8 @@ class RentOrOwn:
         else:
             period_label = period / 12
         plt.title(f"Distribution of results in year {period_label:0.1f}")
-        ax.get_xaxis().set_ticks([])
-        ax.yaxis.set_major_formatter(StrMethodFormatter("${x:0.2e}"))
+        ax.get_yaxis().set_ticks([])
+        ax.xaxis.set_major_formatter(StrMethodFormatter("${x:n}"))
         plt.show()
 
     def median_returns_plot(self):
@@ -195,8 +197,11 @@ class RentOrOwn:
         plt.plot(x, rent_med, label="Rent")
         plt.legend()
         plt.title("Median returns over the investment horizon")
-        ax.get_yaxis().set_ticks([])
-        ax.xaxis.set_major_formatter(StrMethodFormatter("${x:0.2e}"))
+        # ax.get_yaxis().set_ticks([])
+        ax.yaxis.set_major_formatter(StrMethodFormatter("${x:n}"))
+        plt.xlabel("Months")
+        plt.ylabel("Net Worth")
+        # ax.xaxis.set_major_formatter(StrMethodFormatter("${x:0.2e}"))
         plt.show()
 
 
