@@ -1,0 +1,11 @@
+{
+  "_template": "gh:cjolowicz/cookiecutter-hypermodern-python",
+  "author": "Ian Preston",
+  "email": "ian.e.preston@gmail.com",
+  "friendly_name": "Rent or Own",
+  "github_user": "ianepreston",
+  "license": "GPL-3.0",
+  "package_name": "rentorown",
+  "project_name": "rentorown",
+  "version": "0.0.0"
+}

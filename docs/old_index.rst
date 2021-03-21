@@ -18,23 +18,23 @@ anyone might make in whole or in part due to its results. Hope that covers my as
 Key classes and functions documentation
 ==========================================
 
-.. autoclass:: mortgage.house.House
-   :members: 
+.. autoclass:: rentorown.house.House
+   :members:
 
 
-.. autoclass:: mortgage.house.Mortgage
-   :members: 
+.. autoclass:: rentorown.house.Mortgage
+   :members:
 
-.. autofunction:: mortgage.asset.annual_to_monthly_return
+.. autofunction:: rentorown.asset.annual_to_monthly_return
 
-.. autofunction:: mortgage.asset.annual_to_monthly_stdev
+.. autofunction:: rentorown.asset.annual_to_monthly_stdev
 
-.. autoclass:: mortgage.asset.BaseAsset
+.. autoclass:: rentorown.asset.BaseAsset
 
-.. autoclass:: mortgage.rentorown.RentOrOwn
+.. autoclass:: rentorown.rentorown.RentOrOwn
     :members:
 
-.. autoclass:: mortgage.rentorown.ParameterizedRentOrOwn
+.. autoclass:: rentorown.rentorown.ParameterizedRentOrOwn
     :members:
 
 

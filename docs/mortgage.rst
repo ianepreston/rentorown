@@ -4,26 +4,26 @@ mortgage package
 Submodules
 ----------
 
-mortgage.asset module
+rentorown.asset module
 ---------------------
 
-.. automodule:: mortgage.asset
+.. automodule:: rentorown.asset
     :members:
     :undoc-members:
     :show-inheritance:
 
-mortgage.house module
+rentorown.house module
 ---------------------
 
-.. automodule:: mortgage.house
+.. automodule:: rentorown.house
     :members:
     :undoc-members:
     :show-inheritance:
 
-mortgage.rentorown module
+rentorown.rentorown module
 -------------------------
 
-.. automodule:: mortgage.rentorown
+.. automodule:: rentorown.rentorown
     :members:
     :undoc-members:
     :show-inheritance:

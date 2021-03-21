@@ -1,6 +1,7 @@
 """Tests for the mortgage class"""
 import pytest
-from mortgage import house
+
+from rentorown import house
 
 
 @pytest.fixture(scope="module")
