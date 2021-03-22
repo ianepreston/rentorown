@@ -4,12 +4,12 @@ from collections import OrderedDict
 from datetime import date
 from dateutil.relativedelta import relativedelta
 import pandas as pd
-import numpy as np
+import numpy_financial as npf
 
 
 class House:
     """House object, you buy one of these
-    
+
     Parameters
     ----------
     value: numeric
@@ -21,17 +21,17 @@ class House:
 
     def monthly_property_tax(self, rate=0.0085):
         """taken from city of edmonton tax calculator
-        
+
         Parameters
         ----------
         rate: float, default 0.0085
-            annual tax rate 
+            annual tax rate
         """
         return self.value * rate / 12
 
     def buy(self, down_payment, additional_costs=2300):
         """Buy the house
-        
+
         Parameters
         ----------
         down_payment: numeric
@@ -41,7 +41,7 @@ class House:
             home appraisal, etc. default value from
             Preet Bannerjee's rent or own excel sheet
             # http://www.preetbanerjee.com/general/is-renting-a-home-always-a-waste-of-money-no/
-        
+
         Returns
         -------
         dict
@@ -56,7 +56,7 @@ class House:
 
     def sell(self):
         """Sell the house
-        
+
         Eventually we'll want to add closing costs and other
         things in here, but for now this just returns the value
 
@@ -124,7 +124,7 @@ class House:
 
 class Mortgage:
     """Base mortgage class
-    
+
     Parameters
     -----------
     principal: numeric
@@ -145,7 +145,7 @@ class Mortgage:
 
         Takes APR as an input and compounds semi annually for AER. Canadian
         mortgages are dumb like that.
-        
+
         Parameters
         -----------
         principal: numeric
@@ -154,7 +154,7 @@ class Mortgage:
             Total amortization period (not the term of the mortgage)
         rate: float
             APR in decimal form, i.e. 6% is input as 0.06
-        
+
         Returns
         --------
         pmt: float
@@ -163,7 +163,7 @@ class Mortgage:
         rate = (1 + (self.rate / 2)) ** 2 - 1
         periodic_interest_rate = (1 + rate) ** (1 / 12) - 1
         periods = self.years * 12
-        pmt = -round(np.pmt(periodic_interest_rate, periods, self.principal), 2)
+        pmt = -round(npf.pmt(periodic_interest_rate, periods, self.principal), 2)
         return pmt
 
     def bi_weekly_payment(self):
@@ -171,7 +171,7 @@ class Mortgage:
 
         Takes APR as an input and compounds semi annually for AER. Canadian
         mortgages are dumb like that.
-        
+
         Parameters
         -----------
         principal: numeric
@@ -180,7 +180,7 @@ class Mortgage:
             Total amortization period (not the term of the mortgage)
         rate: float
             APR in decimal form, i.e. 6% is input as 0.06
-        
+
         Returns
         --------
         pmt: float
@@ -190,15 +190,15 @@ class Mortgage:
         rate = (1 + (self.rate / 2)) ** 2 - 1
         periodic_interest_rate = (1 + rate) ** (1 / 26) - 1
         periods = self.years * 26
-        pmt = -round(np.pmt(periodic_interest_rate, periods, self.principal), 2)
+        pmt = -round(npf.pmt(periodic_interest_rate, periods, self.principal), 2)
         return pmt
 
     def acc_bi_weekly_payment(self):
         """Payments required for an accelerated bi-weekly payment schedule
-        
+
         Takes APR as an input and compounds semi annually for AER. Canadian
         mortgages are dumb like that.
-        
+
         Parameters
         -----------
         principal: numeric
@@ -207,7 +207,7 @@ class Mortgage:
             Total amortization period (not the term of the mortgage)
         rate: float
             APR in decimal form, i.e. 6% is input as 0.06
-        
+
         Returns
         --------
         pmt: float
@@ -225,7 +225,7 @@ class Mortgage:
             additional regular contributions
         payment_type: ["monthly", "bi_weekly", "acc_bi_weekly"], default "monthly"
             type of payment plan
-        
+
         Returns
         -------
         df: pandas.DataFrame

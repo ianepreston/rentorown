@@ -3,13 +3,13 @@ locale.setlocale(locale.LC_ALL, '')
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import StrMethodFormatter
-from .asset import BaseAsset, annual_to_monthly_return
-from .house import House, Mortgage
+from rentorown.asset import BaseAsset, annual_to_monthly_return
+from rentorown.house import House, Mortgage
 
 
 class RentOrOwn:
     """Based on a ton of assumptions, are you financially better off rening or owning?
-    
+
     Taking two (presumably equivalent) properties, one of which you could rent, and the
     other that you could purchase, which one will leave you financially better off?
     Assuming (among other things) that you invest the difference in cash flow and don't
@@ -63,7 +63,7 @@ class RentOrOwn:
         maintenance_cost: float, default 0.01
             The annual percentage of the starting value of the house that will go to
             maintenance and upkeep. Note that this is also escalated by inflation
-        
+
 
         TODO
         ----
@@ -93,7 +93,7 @@ class RentOrOwn:
         """
         Input all the assumptions that will go into the rent or own model
 
-        
+
         """
         house = House(value=house_price)
         if additional_purchase_costs is None:
@@ -105,7 +105,7 @@ class RentOrOwn:
         mortgage = Mortgage(
             buy_dict["mortgage"], mortgage_amortization_years, mortgage_apr
         )
-        self.mortgage_df = mortgage.amortize(
+        self.mortgage_df = rentorown.amortize(
             addl_pmt=mortgage_additional_payments,
             payment_type=mortgage_payment_schedule,
         )
@@ -156,7 +156,7 @@ class RentOrOwn:
 
     def histogram(self, period=None):
         """Plot a histogram of rent vs own net worths
-        
+
         Parameters
 
         period: int, default None
@@ -208,9 +208,9 @@ class RentOrOwn:
 class ParameterizedRentOrOwn(RentOrOwn):
     """Rent or own with pre built distributions for housing and assets
 
-    Housing crudely estimated from MLS HPI: 
+    Housing crudely estimated from MLS HPI:
     https://www.crea.ca/housing-market-stats/mls-home-price-index/hpi-tool/
-    
+
     Investment returns taken from 80/20 Stocks Bonds expected returns from
     Canadian Couch Potato
     https://canadiancouchpotato.com/2016/03/21/what-returns-to-expect-when-youre-expecting/
