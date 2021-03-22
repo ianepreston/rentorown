@@ -5,6 +5,7 @@ dependencies:
   - python
   - pandas
   - numpy-financial
+  - matplotlib
   - python-dateutil
   - pip
   - jupyterlab
