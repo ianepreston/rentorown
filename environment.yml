@@ -9,6 +9,8 @@ dependencies:
   - python-dateutil
   - pip
   - jupyterlab
+  - jupyter_contrib_nbextensions
+  - ipywidgets
   - pip:
       - altair_recipes
       - .
