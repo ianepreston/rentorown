@@ -1,24 +1,15 @@
-name: mortgage_dev
+name: rentorown
 channels:
-  - anaconda
   - conda-forge
-  - defaults
 dependencies:
-  - python=3.7
+  - python
   - pandas
+  - numpy-financial
+  - matplotlib
   - python-dateutil
   - pip
-  - pre_commit
-  - codecov
-  - pytest-cov
-  - pytest-pep8
-  - sphinx
-  - sphinx_rtd_theme
-  - numpydoc
-  - pandoc
   - jupyterlab
-  - pylint
-  - black
-  - pytest
+  - ipywidgets
   - pip:
-          - altair_recipes
+      - altair_recipes
+      - .

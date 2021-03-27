@@ -33,6 +33,9 @@ A rent or own calculator based to the best of my abilities on Canadian data.
 .. |Black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
    :target: https://github.com/psf/black
    :alt: Black
+.. image:: https://mybinder.org/badge_logo.svg
+   :target: https://mybinder.org/v2/gh/ianepreston/rentorown/HEAD?urlpath=lab&filepath=index.ipynb
+   :alt: Binder
 
 
 IMPORTANT DISCLAIMER
