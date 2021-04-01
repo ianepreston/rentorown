@@ -50,6 +50,7 @@ sphinx-rtd-theme = "^0.5.1"
 sphinx-click = "^2.6.0"
 Pygments = "^2.8.1"
 jupyterlab = "^3.0.12"
+ipywidgets = "^7.6.3"
 
 
 [tool.coverage.paths]
