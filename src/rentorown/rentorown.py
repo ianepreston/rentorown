@@ -105,7 +105,7 @@ class RentOrOwn:
         mortgage = Mortgage(
             buy_dict["mortgage"], mortgage_amortization_years, mortgage_apr
         )
-        self.mortgage_df = rentorown.amortize(
+        self.mortgage_df = mortgage.amortize(
             addl_pmt=mortgage_additional_payments,
             payment_type=mortgage_payment_schedule,
         )
