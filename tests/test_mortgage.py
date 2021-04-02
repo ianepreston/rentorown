@@ -1,4 +1,4 @@
-"""Tests for the mortgage class"""
+"""Tests for the mortgage class."""
 import pytest
 
 from rentorown import house
@@ -6,32 +6,80 @@ from rentorown import house
 
 @pytest.fixture(scope="module")
 def mortgage100k():
+    """Demo 100k mortgage fixture.
+
+    Returns
+    -------
+    house.Mortgage
+        A 100k mortgage
+    """
     test_mortgage = house.Mortgage(100000, 25, 0.06)
     return test_mortgage
 
 
 @pytest.fixture(scope="module")
 def mortgage250k():
+    """Demo 250k mortgage fixture.
+
+    Returns
+    -------
+    house.Mortgage
+        A 250k mortgage
+    """
     test_mortgage = house.Mortgage(250000, 25, 0.03)
     return test_mortgage
 
 
 def test_correct_monthly_payment(mortgage100k, mortgage250k):
+    """Validate correct periodic payments.
+
+    Parameters
+    ----------
+    mortgage100k: house.Mortgage
+        a 100k mortgage
+    mortgage250k: house.Mortgage
+        a 250k mortgage
+    """
     assert mortgage100k.monthly_payment() == 639.81
     assert mortgage250k.monthly_payment() == 1183.11
 
 
 def test_correct_bi_weekly_payment(mortgage100k, mortgage250k):
+    """Validate correct periodic payments.
+
+    Parameters
+    ----------
+    mortgage100k: house.Mortgage
+        a 100k mortgage
+    mortgage250k: house.Mortgage
+        a 250k mortgage
+    """
     assert mortgage100k.bi_weekly_payment() == 294.90
     assert mortgage250k.bi_weekly_payment() == 545.69
 
 
 def test_correct_acc_bi_weekly_payment(mortgage100k, mortgage250k):
+    """Validate correct periodic payments.
+
+    Parameters
+    ----------
+    mortgage100k: house.Mortgage
+        a 100k mortgage
+    mortgage250k: house.Mortgage
+        a 250k mortgage
+    """
     assert mortgage100k.acc_bi_weekly_payment() == 319.90
     assert mortgage250k.acc_bi_weekly_payment() == 591.55
 
 
 def test_correct_interest(mortgage250k):
+    """Validate correct periodic interest.
+
+    Parameters
+    ----------
+    mortgage250k: house.Mortgage
+        a 250k mortgage
+    """
     df = mortgage250k.amortize()
     assert df["Interest"].sum().round(2) == 104_934.71
     assert df["Principal"].sum().round(2) == 250_000.0
