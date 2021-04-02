@@ -112,7 +112,7 @@ def safety(session: Session) -> None:
     session: Session
         The Session object.
     """
-    requirements = session.poetry.export_requirements()
+    requirements = nox_poetry.export_requirements(session)
     session.install("safety")
     session.run("safety", "check", f"--file={requirements}", "--bare")
 
