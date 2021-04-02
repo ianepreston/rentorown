@@ -1,14 +1,20 @@
+"""Calculate if you should rent or own for a given scenario."""
+
 import locale
-locale.setlocale(locale.LC_ALL, '')
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.ticker import StrMethodFormatter
-from rentorown.asset import BaseAsset, annual_to_monthly_return
+
+from rentorown.asset import annual_to_monthly_return, distreturns
 from rentorown.house import House, Mortgage
 
 
+locale.setlocale(locale.LC_ALL, "")
+
+
 class RentOrOwn:
-    """Based on a ton of assumptions, are you financially better off rening or owning?
+    """For a set of assumptions, see if you're financially better off renting or owning.
 
     Taking two (presumably equivalent) properties, one of which you could rent, and the
     other that you could purchase, which one will leave you financially better off?
@@ -19,7 +25,38 @@ class RentOrOwn:
     other financial assumptions, and based on them the model will show which is the
     better financial decision (assuming I built the model correctly).
 
-    Parameters
+
+    Notes
+    -----
+    Things to do:
+
+    Lot of cleanup on __init__, some of the class variables can just be transient,
+    or better named. Could use more inline comments. Might be worth breaking up into
+    more functions. Some of the nested array Transposes could probably be fixed up.
+    """
+
+    def __init__(
+        self,
+        monthly_rent,
+        house_price,
+        down_payment,
+        mortgage_amortization_years,
+        mortgage_apr,
+        housing_asset_dict,
+        investment_asset_dict,
+        number_of_simulations,
+        additional_purchase_costs=None,
+        additional_monthly_costs=0,
+        mortgage_payment_schedule="monthly",
+        mortgage_additional_payments=0,
+        annual_inflation=0.02,
+        monthly_property_tax_rate=None,
+        maintenance_cost=0.01,
+    ):
+        """
+        Input all the assumptions that will go into the rent or own model.
+
+        Parameters
         ----------
         monthly_rent: numeric
             Starting monthly rent of the equivalent rental property
@@ -63,37 +100,6 @@ class RentOrOwn:
         maintenance_cost: float, default 0.01
             The annual percentage of the starting value of the house that will go to
             maintenance and upkeep. Note that this is also escalated by inflation
-
-
-        TODO
-        ----
-        Lot of cleanup on __init__, some of the class variables can just be transient, or better
-        named. Could use more inline comments. Might be worth breaking up into more
-        functions. Some of the nested array Transposes could probably be fixed up.
-    """
-
-    def __init__(
-        self,
-        monthly_rent,
-        house_price,
-        down_payment,
-        mortgage_amortization_years,
-        mortgage_apr,
-        housing_asset_dict,
-        investment_asset_dict,
-        number_of_simulations,
-        additional_purchase_costs=None,
-        additional_monthly_costs=0,
-        mortgage_payment_schedule="monthly",
-        mortgage_additional_payments=0,
-        annual_inflation=0.02,
-        monthly_property_tax_rate=None,
-        maintenance_cost=0.01,
-    ):
-        """
-        Input all the assumptions that will go into the rent or own model
-
-
         """
         house = House(value=house_price)
         if additional_purchase_costs is None:
@@ -123,11 +129,11 @@ class RentOrOwn:
         )
         own_cash_flow[0] += buy_dict["cash"]
         self.house_appreciation = (
-            BaseAsset(
+            distreturns(
                 **housing_asset_dict,
                 periods=self._simulation_periods,
                 simulations=number_of_simulations,
-            ).returns
+            )
             * house_price
         )
         own_debt = self.mortgage_df["End_balance"].to_numpy()
@@ -136,11 +142,11 @@ class RentOrOwn:
         rent_net_cash_flow = own_cash_flow - rent_cash_flow
         rent_invest_cash_flow = np.maximum(rent_net_cash_flow, 0)
         rent_drawdown_cash_flow = np.minimum(rent_net_cash_flow, 0)
-        asset_prices = BaseAsset(
+        asset_prices = distreturns(
             **investment_asset_dict,
             periods=self._simulation_periods,
             simulations=number_of_simulations,
-        ).returns
+        )
         self.ap = asset_prices
         asset_units_purchase = (rent_invest_cash_flow / asset_prices.T).T.cumsum(axis=0)
         self.aup = asset_units_purchase
@@ -149,16 +155,27 @@ class RentOrOwn:
         self.rent_net_worth = (rent_investment_value.T - rent_drawdown_cash_flow).T
 
     def _inflated_series(self, amount):
-        """Take an initial value and project it over the forecast period with inflation"""
+        """Project an initial value over the forecast period with inflation.
+
+        Parameters
+        ----------
+        amount: numeric
+            The value to inflate
+
+        Returns
+        -------
+        array_like
+            The value projected into the future
+        """
         base_inflate = np.full(self._simulation_periods, 1 + self._inflation).cumprod()
         inflated = base_inflate * amount
         return inflated
 
     def histogram(self, period=None):
-        """Plot a histogram of rent vs own net worths
+        """Plot a histogram of rent vs own net worths.
 
         Parameters
-
+        ----------
         period: int, default None
             What period to compare net worth in, defaults to end of mortgage amortization
         """
@@ -166,10 +183,10 @@ class RentOrOwn:
             period = -1
         elif abs(period) > self._simulation_periods - 1:
             print(
-                f"period {period} out of range {self._simulation_periods}, setting to last period"
+                f"period {period} out of range {self._simulation_periods}, setting to last period"  # noqa: B950
             )
             period = -1
-        fig, ax = plt.subplots(figsize=(20, 10))
+        _, ax = plt.subplots(figsize=(20, 10))
         plt.hist(
             (self.own_net_worth[period], self.rent_net_worth[period]),
             bins=min(100, self.own_net_worth.shape[0]),
@@ -188,7 +205,7 @@ class RentOrOwn:
         plt.show()
 
     def median_returns_plot(self):
-        """Plot median returns over the whole amortization period"""
+        """Plot median returns over the whole amortization period."""
         x = np.arange(0, len(self.own_net_worth))
         rent_med = np.median(self.rent_net_worth, 1)
         own_med = np.median(self.own_net_worth, 1)
@@ -206,7 +223,7 @@ class RentOrOwn:
 
 
 class ParameterizedRentOrOwn(RentOrOwn):
-    """Rent or own with pre built distributions for housing and assets
+    """Rent or own with pre built distributions for housing and assets.
 
     Housing crudely estimated from MLS HPI:
     https://www.crea.ca/housing-market-stats/mls-home-price-index/hpi-tool/
