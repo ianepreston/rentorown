@@ -1,15 +1,15 @@
 name: rentorown
 channels:
-  - conda-forge
+    - conda-forge
 dependencies:
-  - python
-  - pandas
-  - numpy-financial
-  - matplotlib
-  - python-dateutil
-  - pip
-  - jupyterlab
-  - ipywidgets
-  - pip:
-      - altair_recipes
-      - .
+    - python
+    - pandas
+    - numpy-financial
+    - matplotlib
+    - python-dateutil
+    - pip
+    - jupyterlab
+    - ipywidgets
+    - pip:
+          - altair_recipes
+          - .

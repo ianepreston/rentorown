@@ -1,6 +1,9 @@
 """Basic asset class to escalate financial flows."""
 import math
-from typing import Dict, Callable, Optional
+from typing import Callable
+from typing import Dict
+from typing import Optional
+
 import numpy as np
 
 

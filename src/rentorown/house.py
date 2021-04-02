@@ -2,9 +2,10 @@
 import math
 from collections import OrderedDict
 from datetime import date
-from dateutil.relativedelta import relativedelta
-import pandas as pd
+
 import numpy_financial as npf
+import pandas as pd
+from dateutil.relativedelta import relativedelta
 
 
 class House:

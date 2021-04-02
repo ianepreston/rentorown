@@ -1,13 +1,14 @@
 """Calculate if you should rent or own for a given scenario."""
-
 import locale
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.ticker import StrMethodFormatter
 
-from rentorown.asset import annual_to_monthly_return, distreturns
-from rentorown.house import House, Mortgage
+from rentorown.asset import annual_to_monthly_return
+from rentorown.asset import distreturns
+from rentorown.house import House
+from rentorown.house import Mortgage
 
 
 locale.setlocale(locale.LC_ALL, "")
