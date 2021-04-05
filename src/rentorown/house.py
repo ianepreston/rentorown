@@ -1,14 +1,15 @@
-"""Messing around with refactoring the old code before I commit to a rebuild"""
+"""Logic related to houses."""
 import math
 from collections import OrderedDict
 from datetime import date
-from dateutil.relativedelta import relativedelta
-import pandas as pd
+
 import numpy_financial as npf
+import pandas as pd
+from dateutil.relativedelta import relativedelta
 
 
 class House:
-    """House object, you buy one of these
+    """House object, you buy one of these.
 
     Parameters
     ----------
@@ -19,18 +20,25 @@ class House:
     def __init__(self, value):
         self.value = value
 
-    def monthly_property_tax(self, rate=0.0085):
-        """taken from city of edmonton tax calculator
+    def monthly_property_tax(self, rate: float = 0.0085):
+        """Calculate monthly property tax.
+
+        Based off City of Edmonont property tax calculator
 
         Parameters
         ----------
         rate: float, default 0.0085
             annual tax rate
+
+        Returns
+        -------
+        float
+            The monthly property tax on the house.
         """
         return self.value * rate / 12
 
     def buy(self, down_payment, additional_costs=2300):
-        """Buy the house
+        """Buy the house.
 
         Parameters
         ----------
@@ -55,20 +63,21 @@ class House:
         return {"mortgage": mortgage_amt, "cash": cash}
 
     def sell(self):
-        """Sell the house
+        """Sell the house.
 
         Eventually we'll want to add closing costs and other
         things in here, but for now this just returns the value
 
         Returns
-        --------
+        -------
         self.value: numeric
             Just the value of the house
         """
         return self.value
 
     def _find_cmhc_premium(self, down_payment):
-        """ Helper function for buy()
+        """Calculate CMHC premium based on down payment percentage and value.
+
         Determine the amount of the CMHC premium added onto a mortgage
         Can only be applied to 25 year and under amortization periods
         I'm not checking for that right now, maybe update later
@@ -98,8 +107,7 @@ class House:
         return premium
 
     def _find_title_fees(self, mortgage_amount):
-        """Helper function for buy()
-        Calculates title fees for Alberta
+        """Calculate title fees for Alberta.
 
         Parameters
         ----------
@@ -113,7 +121,18 @@ class House:
         """
 
         def title_calc(amount):
-            """Formula is the same for purchase and mortgage"""
+            """Use same formula for purchase and mortgage.
+
+            Parameters
+            ----------
+            amount: numeric
+                Either mortgage amount or value of house
+
+            Returns
+            -------
+            numeric:
+                Title cost of house value or mortgage
+            """
             portions = math.ceil(amount / 5000)
             fee = 50 + portions
             return fee
@@ -123,10 +142,10 @@ class House:
 
 
 class Mortgage:
-    """Base mortgage class
+    """Base mortgage class.
 
     Parameters
-    -----------
+    ----------
     principal: numeric
         Value of the mortgage
     years: int
@@ -141,22 +160,13 @@ class Mortgage:
         self.rate = rate
 
     def monthly_payment(self):
-        """Payments required for a monthly payment schedule
+        """Calculate payments required for a monthly payment schedule.
 
         Takes APR as an input and compounds semi annually for AER. Canadian
         mortgages are dumb like that.
 
-        Parameters
-        -----------
-        principal: numeric
-            The amount of the mortgage
-        years: int
-            Total amortization period (not the term of the mortgage)
-        rate: float
-            APR in decimal form, i.e. 6% is input as 0.06
-
         Returns
-        --------
+        -------
         pmt: float
             The amount of the monthly payment
         """
@@ -167,26 +177,16 @@ class Mortgage:
         return pmt
 
     def bi_weekly_payment(self):
-        """Payments required for a bi-weekly payment schedule
+        """Payments required for a bi-weekly payment schedule.
 
         Takes APR as an input and compounds semi annually for AER. Canadian
         mortgages are dumb like that.
 
-        Parameters
-        -----------
-        principal: numeric
-            The amount of the mortgage
-        years: int
-            Total amortization period (not the term of the mortgage)
-        rate: float
-            APR in decimal form, i.e. 6% is input as 0.06
-
         Returns
-        --------
+        -------
         pmt: float
             The amount of the monthly payment
         """
-
         rate = (1 + (self.rate / 2)) ** 2 - 1
         periodic_interest_rate = (1 + rate) ** (1 / 26) - 1
         periods = self.years * 26
@@ -194,22 +194,13 @@ class Mortgage:
         return pmt
 
     def acc_bi_weekly_payment(self):
-        """Payments required for an accelerated bi-weekly payment schedule
+        """Payments required for an accelerated bi-weekly payment schedule.
 
         Takes APR as an input and compounds semi annually for AER. Canadian
         mortgages are dumb like that.
 
-        Parameters
-        -----------
-        principal: numeric
-            The amount of the mortgage
-        years: int
-            Total amortization period (not the term of the mortgage)
-        rate: float
-            APR in decimal form, i.e. 6% is input as 0.06
-
         Returns
-        --------
+        -------
         pmt: float
             The amount of the monthly payment
         """
@@ -217,11 +208,11 @@ class Mortgage:
         return pmt
 
     def amortize(self, addl_pmt=0, payment_type="monthly"):
-        """Show payments on the mortgage
+        """Show payments on the mortgage.
 
         Parameters
         ----------
-        addl_pmnt: numeric, default 0
+        addl_pmt: numeric, default 0
             additional regular contributions
         payment_type: ["monthly", "bi_weekly", "acc_bi_weekly"], default "monthly"
             type of payment plan
@@ -234,7 +225,18 @@ class Mortgage:
         """
 
         def amortizdict(adp=addl_pmt):
-            """Yield a dictionary to convert to dataframe"""
+            """Yield a dictionary to convert to dataframe.
+
+            Parameters
+            ----------
+            adp: float
+                Additional payment to be made beyond the requirement
+
+            Yields
+            ------
+            Dict
+                All the data for another period of mortgage payments
+            """
             periods_dict = {
                 "monthly": self.monthly_payment,
                 "bi_weekly": self.bi_weekly_payment,

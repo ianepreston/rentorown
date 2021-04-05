@@ -5,8 +5,8 @@ from pathlib import Path
 from textwrap import dedent
 
 import nox
-from nox_poetry import Session
-from nox_poetry import session
+import nox_poetry.patch  # noqa: F401
+from nox.sessions import Session
 
 
 package = "rentorown"
@@ -14,7 +14,7 @@ python_versions = ["3.9", "3.8", "3.7"]
 nox.options.sessions = (
     "pre-commit",
     "safety",
-    "mypy",
+    # "mypy",
     "tests",
     "typeguard",
     "xdoctest",
@@ -29,8 +29,10 @@ def activate_virtualenv_in_precommit_hooks(session: Session) -> None:
     session's virtual environment. This allows pre-commit to locate hooks in
     that environment when invoked from git.
 
-    Args:
-        session: The Session object.
+    Parameters
+    ----------
+    session: Session
+        The Session object.
     """
     if session.bin is None:
         return
@@ -73,9 +75,15 @@ def activate_virtualenv_in_precommit_hooks(session: Session) -> None:
         hook.write_text("\n".join(lines))
 
 
-@session(name="pre-commit", python="3.9")
+@nox.session(name="pre-commit", python="3.9")
 def precommit(session: Session) -> None:
-    """Lint using pre-commit."""
+    """Lint using pre-commit.
+
+    Parameters
+    ----------
+    session: Session
+        The Session object.
+    """
     args = session.posargs or ["run", "--all-files", "--show-diff-on-failure"]
     session.install(
         "black",
@@ -95,17 +103,29 @@ def precommit(session: Session) -> None:
         activate_virtualenv_in_precommit_hooks(session)
 
 
-@session(python="3.9")
+@nox.session(python="3.9")
 def safety(session: Session) -> None:
-    """Scan dependencies for insecure packages."""
-    requirements = session.poetry.export_requirements()
+    """Scan dependencies for insecure packages.
+
+    Parameters
+    ----------
+    session: Session
+        The Session object.
+    """
+    requirements = nox_poetry.export_requirements(session)
     session.install("safety")
     session.run("safety", "check", f"--file={requirements}", "--bare")
 
 
-@session(python=python_versions)
+@nox.session(python=python_versions)
 def mypy(session: Session) -> None:
-    """Type-check using mypy."""
+    """Type-check using mypy.
+
+    Parameters
+    ----------
+    session: Session
+        The Session object.
+    """
     args = session.posargs or ["src", "tests", "docs/conf.py"]
     session.install(".")
     session.install("mypy", "pytest")
@@ -114,9 +134,15 @@ def mypy(session: Session) -> None:
         session.run("mypy", f"--python-executable={sys.executable}", "noxfile.py")
 
 
-@session(python=python_versions)
+@nox.session(python=python_versions)
 def tests(session: Session) -> None:
-    """Run the test suite."""
+    """Run the test suite.
+
+    Parameters
+    ----------
+    session: Session
+        The Session object.
+    """
     session.install(".")
     session.install("coverage[toml]", "pytest", "pygments")
     try:
@@ -126,9 +152,15 @@ def tests(session: Session) -> None:
             session.notify("coverage")
 
 
-@session
+@nox.session
 def coverage(session: Session) -> None:
-    """Produce the coverage report."""
+    """Produce the coverage report.
+
+    Parameters
+    ----------
+    session: Session
+        The Session object.
+    """
     # Do not use session.posargs unless this is the only session.
     nsessions = len(session._runner.manifest)  # type: ignore[attr-defined]
     has_args = session.posargs and nsessions == 1
@@ -142,26 +174,44 @@ def coverage(session: Session) -> None:
     session.run("coverage", *args)
 
 
-@session(python=python_versions)
+@nox.session(python=python_versions)
 def typeguard(session: Session) -> None:
-    """Runtime type checking using Typeguard."""
+    """Runtime type checking using Typeguard.
+
+    Parameters
+    ----------
+    session: Session
+        The Session object.
+    """
     session.install(".")
     session.install("pytest", "typeguard", "pygments")
     session.run("pytest", f"--typeguard-packages={package}", *session.posargs)
 
 
-@session(python=python_versions)
+@nox.session(python=python_versions)
 def xdoctest(session: Session) -> None:
-    """Run examples with xdoctest."""
+    """Run examples with xdoctest.
+
+    Parameters
+    ----------
+    session: Session
+        The Session object.
+    """
     args = session.posargs or ["all"]
     session.install(".")
     session.install("xdoctest[colors]")
     session.run("python", "-m", "xdoctest", package, *args)
 
 
-@session(name="docs-build", python="3.8")
+@nox.session(name="docs-build", python="3.8")
 def docs_build(session: Session) -> None:
-    """Build the documentation."""
+    """Build the documentation.
+
+    Parameters
+    ----------
+    session: Session
+        The Session object.
+    """
     args = session.posargs or ["docs", "docs/_build"]
     session.install(".")
     session.install("sphinx", "sphinx-click", "sphinx-rtd-theme")
@@ -173,9 +223,15 @@ def docs_build(session: Session) -> None:
     session.run("sphinx-build", *args)
 
 
-@session(python="3.8")
+@nox.session(python="3.8")
 def docs(session: Session) -> None:
-    """Build and serve the documentation with live reloading on file changes."""
+    """Build and serve the documentation with live reloading on file changes.
+
+    Parameters
+    ----------
+    session: Session
+        The Session object.
+    """
     args = session.posargs or ["--open-browser", "docs", "docs/_build"]
     session.install(".")
     session.install("sphinx", "sphinx-autobuild", "sphinx-click", "sphinx-rtd-theme")
