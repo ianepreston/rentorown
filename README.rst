@@ -3,24 +3,10 @@ Rent or Own
 
 A rent or own calculator based to the best of my abilities on Canadian data.
 
-|PyPI| |Python Version| |License|
-
-|Read the Docs| |Tests| |Codecov|
+|Tests| |Codecov|
 
 |pre-commit| |Black|
 
-.. |PyPI| image:: https://img.shields.io/pypi/v/rentorown.svg
-   :target: https://pypi.org/project/rentorown/
-   :alt: PyPI
-.. |Python Version| image:: https://img.shields.io/pypi/pyversions/rentorown
-   :target: https://pypi.org/project/rentorown
-   :alt: Python Version
-.. |License| image:: https://img.shields.io/pypi/l/rentorown
-   :target: https://opensource.org/licenses/GPL-3.0
-   :alt: License
-.. |Read the Docs| image:: https://img.shields.io/readthedocs/rentorown/latest.svg?label=Read%20the%20Docs
-   :target: https://rentorown.readthedocs.io/
-   :alt: Read the documentation at https://rentorown.readthedocs.io/
 .. |Tests| image:: https://github.com/ianepreston/rentorown/workflows/Tests/badge.svg
    :target: https://github.com/ianepreston/rentorown/actions?workflow=Tests
    :alt: Tests
@@ -34,7 +20,7 @@ A rent or own calculator based to the best of my abilities on Canadian data.
    :target: https://github.com/psf/black
    :alt: Black
 .. image:: https://mybinder.org/badge_logo.svg
-   :target: https://mybinder.org/v2/gh/ianepreston/rentorown/HEAD?urlpath=lab&filepath=index.ipynb
+   :target: https://mybinder.org/v2/gh/ianepreston/rentorown/HEAD?urlpath=lab/tree/index.ipynb
    :alt: Binder
 
 
@@ -52,39 +38,18 @@ of renting vs owning a home, and have made efforts to make it accurate, but I ca
 any guarantees to its validity, and assume no responsibility for any financial decisions
 anyone might make in whole or in part due to its results. Hope that covers my ass.
 
-Features
---------
-
-* TODO
-
-
-Requirements
-------------
-
-* TODO
-
 
 Installation
 ------------
 
-You can install *Rent or Own* via pip_ from PyPI_:
+You can install *Rent or Own* with poetry:
 
 .. code:: console
 
-   $ pip install rentorown
+   $ git clone https://github.com/ianepreston/rentorown.git
+   $ cd rentorown
+   $ poetry install
 
-
-Usage
------
-
-Link to docs should go here eventually.
-
-
-Contributing
-------------
-
-Contributions are very welcome.
-To learn more, see the `Contributor Guide`_.
 
 
 License

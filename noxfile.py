@@ -5,8 +5,8 @@ from pathlib import Path
 from textwrap import dedent
 
 import nox
-import nox_poetry.patch  # noqa: F401
-from nox.sessions import Session
+from nox_poetry import Session
+from nox_poetry import session
 
 
 package = "rentorown"
@@ -75,7 +75,7 @@ def activate_virtualenv_in_precommit_hooks(session: Session) -> None:
         hook.write_text("\n".join(lines))
 
 
-@nox.session(name="pre-commit", python="3.9")
+@session(name="pre-commit", python="3.9")
 def precommit(session: Session) -> None:
     """Lint using pre-commit.
 
@@ -103,7 +103,7 @@ def precommit(session: Session) -> None:
         activate_virtualenv_in_precommit_hooks(session)
 
 
-@nox.session(python="3.9")
+@session(python="3.9")
 def safety(session: Session) -> None:
     """Scan dependencies for insecure packages.
 
@@ -112,12 +112,12 @@ def safety(session: Session) -> None:
     session: Session
         The Session object.
     """
-    requirements = nox_poetry.export_requirements(session)
+    requirements = session.poetry.export_requirements()
     session.install("safety")
     session.run("safety", "check", f"--file={requirements}", "--bare")
 
 
-@nox.session(python=python_versions)
+@session(python=python_versions)
 def mypy(session: Session) -> None:
     """Type-check using mypy.
 
@@ -134,7 +134,7 @@ def mypy(session: Session) -> None:
         session.run("mypy", f"--python-executable={sys.executable}", "noxfile.py")
 
 
-@nox.session(python=python_versions)
+@session(python=python_versions)
 def tests(session: Session) -> None:
     """Run the test suite.
 
@@ -152,7 +152,7 @@ def tests(session: Session) -> None:
             session.notify("coverage")
 
 
-@nox.session
+@session
 def coverage(session: Session) -> None:
     """Produce the coverage report.
 
@@ -174,7 +174,7 @@ def coverage(session: Session) -> None:
     session.run("coverage", *args)
 
 
-@nox.session(python=python_versions)
+@session(python=python_versions)
 def typeguard(session: Session) -> None:
     """Runtime type checking using Typeguard.
 
@@ -188,7 +188,7 @@ def typeguard(session: Session) -> None:
     session.run("pytest", f"--typeguard-packages={package}", *session.posargs)
 
 
-@nox.session(python=python_versions)
+@session(python=python_versions)
 def xdoctest(session: Session) -> None:
     """Run examples with xdoctest.
 
@@ -203,7 +203,7 @@ def xdoctest(session: Session) -> None:
     session.run("python", "-m", "xdoctest", package, *args)
 
 
-@nox.session(name="docs-build", python="3.8")
+@session(name="docs-build", python="3.8")
 def docs_build(session: Session) -> None:
     """Build the documentation.
 
@@ -223,7 +223,7 @@ def docs_build(session: Session) -> None:
     session.run("sphinx-build", *args)
 
 
-@nox.session(python="3.8")
+@session(python="3.8")
 def docs(session: Session) -> None:
     """Build and serve the documentation with live reloading on file changes.
 
