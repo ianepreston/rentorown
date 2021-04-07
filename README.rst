@@ -20,7 +20,7 @@ A rent or own calculator based to the best of my abilities on Canadian data.
    :target: https://github.com/psf/black
    :alt: Black
 .. image:: https://mybinder.org/badge_logo.svg
-   :target: https://mybinder.org/v2/gh/ianepreston/rentorown/HEAD?urlpath=lab&filepath=index.ipynb
+   :target: https://mybinder.org/v2/gh/ianepreston/rentorown/HEAD?urlpath=lab/tree/index.ipynb
    :alt: Binder
 
 
