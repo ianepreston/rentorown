@@ -49,7 +49,7 @@ pre-commit-hooks = "^3.4.0"
 sphinx-rtd-theme = "^0.5.1"
 sphinx-click = "^2.6.0"
 Pygments = "^2.8.1"
-jupyterlab = "^3.0.12"
+jupyterlab = "^3.0.13"
 ipywidgets = "^7.6.3"
 
 
