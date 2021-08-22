@@ -20,7 +20,7 @@ Changelog = "https://github.com/ianepreston/rentorown/releases"
 [tool.poetry.dependencies]
 python = ">=3.7.1,<4.0.0"
 pandas = "^1.2.4"
-python-dateutil = "^2.8.1"
+python-dateutil = "^2.8.2"
 numpy-financial = "^1.0.0"
 matplotlib = "^3.4.3"
 altair = "^4.1.0"
