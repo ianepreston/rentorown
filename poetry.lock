@@ -601,7 +601,7 @@ python-versions = "*"
 
 [[package]]
 name = "ipywidgets"
-version = "7.6.4"
+version = "7.6.5"
 description = "IPython HTML widgets for Jupyter"
 category = "dev"
 optional = false
@@ -1839,7 +1839,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pyt
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7.1,<4.0.0"
-content-hash = "c895894d10961c90a0f6fe6e944f5bc8b46f2e3b4d28b65cf469c2071e8b9fb3"
+content-hash = "e91f4ba57acb1582c371d9ff2863a72402917c65c61997781d6bee093e91f198"
 
 [metadata.files]
 alabaster = [
@@ -2163,8 +2163,8 @@ ipython-genutils = [
     {file = "ipython_genutils-0.2.0.tar.gz", hash = "sha256:eb2e116e75ecef9d4d228fdc66af54269afa26ab4463042e33785b887c628ba8"},
 ]
 ipywidgets = [
-    {file = "ipywidgets-7.6.4-py2.py3-none-any.whl", hash = "sha256:3ffd1baa741eb631e7a3a69d4df290de074ef697e0ef3176e33361b44cd91711"},
-    {file = "ipywidgets-7.6.4.tar.gz", hash = "sha256:028bf014a0b1d77cb676fe163115f145aacdde0bb9a51c4166940e5b62a7d1d0"},
+    {file = "ipywidgets-7.6.5-py2.py3-none-any.whl", hash = "sha256:d258f582f915c62ea91023299603be095de19afb5ee271698f88327b9fe9bf43"},
+    {file = "ipywidgets-7.6.5.tar.gz", hash = "sha256:00974f7cb4d5f8d494c19810fedb9fa9b64bffd3cda7c2be23c133a1ad3c99c5"},
 ]
 jedi = [
     {file = "jedi-0.18.0-py2.py3-none-any.whl", hash = "sha256:18456d83f65f400ab0c2d3319e48520420ef43b23a086fdc05dff34132f0fb93"},
