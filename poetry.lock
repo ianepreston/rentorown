@@ -738,7 +738,7 @@ test = ["coverage", "requests", "pytest", "pytest-cov", "pytest-tornasync", "pyt
 
 [[package]]
 name = "jupyterlab"
-version = "3.1.11"
+version = "3.1.12"
 description = "JupyterLab computational environment"
 category = "dev"
 optional = false
@@ -1839,7 +1839,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pyt
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7.1,<4.0.0"
-content-hash = "e91f4ba57acb1582c371d9ff2863a72402917c65c61997781d6bee093e91f198"
+content-hash = "9050ecc793109d29cc9dc54d9a6e080ac00f1000dcebd32fcffdd074b80460c1"
 
 [metadata.files]
 alabaster = [
@@ -2195,8 +2195,8 @@ jupyter-server = [
     {file = "jupyter_server-1.5.1.tar.gz", hash = "sha256:db646c991c17ad3dff12e419d36e2b91025912dfd21d13f8ddd524531e6d63bf"},
 ]
 jupyterlab = [
-    {file = "jupyterlab-3.1.11-py3-none-any.whl", hash = "sha256:a2117c159baae40db09c34edf0659df5ff767d0ffc7ae2d74ab0b08d5663156b"},
-    {file = "jupyterlab-3.1.11.tar.gz", hash = "sha256:329b41d6d99bf4e40ab210b37387d32033ea9227e776aa1baf7817bf55423156"},
+    {file = "jupyterlab-3.1.12-py3-none-any.whl", hash = "sha256:69745b3e1333b98054fe247efdc7fff16a15334b8a96a8070dffd350b9733017"},
+    {file = "jupyterlab-3.1.12.tar.gz", hash = "sha256:d16d244b09ff6c101672637101313263bfd76d4c057bfe79a401fea54e1be0e9"},
 ]
 jupyterlab-pygments = [
     {file = "jupyterlab_pygments-0.1.2-py2.py3-none-any.whl", hash = "sha256:abfb880fd1561987efaefcb2d2ac75145d2a5d0139b1876d5be806e32f630008"},
